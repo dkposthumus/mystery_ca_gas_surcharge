@@ -1,8 +1,17 @@
 import requests
 import pandas as pd
 import json
+import requests
+import json
+import pandas as pd
+from pathlib import Path
+# let's create a set of locals referring to our directory and working directory 
+home_dir = Path.home()
+work_dir = (home_dir / 'mystery_ca_gas_surcharge')
+data = (work_dir / 'data')
+raw_data = (data / 'raw')
+code = Path.cwd() 
 
-data_path = '/Users/danpost/Dropbox/Myster_Gas_Surcharge/Analysis/Data'
 # I'm fetching the data using an API from EIA
 api_url = 'https://api.eia.gov/v2/petroleum/pri/spt/data'
 params = {'api_key': 'QyPbWQo92CjndZz8conFD9wb08rBkP4jnDV02TAd'}
@@ -84,6 +93,6 @@ spot_prices_df = spot_prices_df.rename(
 print(spot_prices_df)
 # finally let's save as a csv
 spot_prices_df.to_csv(
-    '/Users/danpost/Dropbox/Myster_Gas_Surcharge/Analysis/Data/spot_prices.csv',
+    f'{data}/spot_prices.csv',
     index=False,
 )

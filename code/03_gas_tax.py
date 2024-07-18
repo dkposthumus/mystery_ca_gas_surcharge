@@ -1,12 +1,21 @@
+import requests
 import pandas as pd
 import json
 import requests
+import json
+import pandas as pd
+from pathlib import Path
+# let's create a set of locals referring to our directory and working directory 
+home_dir = Path.home()
+work_dir = (home_dir / 'mystery_ca_gas_surcharge')
+data = (work_dir / 'data')
+raw_data = (data / 'raw')
+code = Path.cwd() 
 
-data_path = '/Users/danpost/Dropbox/Myster_Gas_Surcharge/Analysis/Data'
 # since we're NOT using an API for this data pull but a csv file, I'm defining where to find that csv file relative to the data macro set above
-gas_tax_dot = f'{data_path}/raw/gas_tax_dot.csv'
+gas_tax_dot = f'{raw_data}/gas_tax_dot.csv'
 # i'm going to do the same thing for the data on gasoline sales
-gas_sales_dot = f'{data_path}/raw/gas_sales_dot.csv'
+gas_sales_dot = f'{raw_data}/gas_sales_dot.csv'
 # now let's define only the variables we're interested in:
 columns_to_keep = ['state', 'rate', 'MMFR_year', 'fuel_type']
 # import the csv as a pandas dataframe -- including ONLY the columns we want
@@ -112,4 +121,4 @@ gas_tax_df[['ca state gas tax', 'federal gas tax']] = gas_tax_df[
 ].fillna(method='ffill')
 # let's check the dataset:
 print(gas_tax_df)
-gas_tax_df.to_csv(f'{data_path}/gas_taxes.csv', index=False)
+gas_tax_df.to_csv(f'{data}/gas_taxes.csv', index=False)

@@ -1,8 +1,17 @@
 import requests
 import pandas as pd
 import json
+import requests
+import json
+import pandas as pd
+from pathlib import Path
+# let's create a set of locals referring to our directory and working directory 
+home_dir = Path.home()
+work_dir = (home_dir / 'mystery_ca_gas_surcharge')
+data = (work_dir / 'data')
+raw_data = (data / 'raw')
+code = Path.cwd() 
 
-data_path = '/Users/danpost/Dropbox/Myster_Gas_Surcharge/Analysis/Data'
 # I'm fetching the data using an API from EIA
 # the two series I'm interested in are:
 # EMM_EPM0_PTE_NUS_DPG -- US all formulations retail price
@@ -73,4 +82,4 @@ gas_retail_df.set_index('date')
 print(gas_retail_df)
 print(gas_retail_df.columns)
 # finally let's save as a csv
-gas_retail_df.to_csv(f'{data_path}/gas_retail.csv', index=False)
+gas_retail_df.to_csv(f'{data}/gas_retail.csv', index=False)

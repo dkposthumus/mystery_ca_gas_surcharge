@@ -2,10 +2,12 @@ import requests
 import json
 import pandas as pd
 from pathlib import Path
-
-raw_data_folder = Path('data/raw/')
-clean_data_folder = Path('data/')
-
+# let's create a set of locals referring to our directory and working directory 
+home_dir = Path.home()
+work_dir = (home_dir / 'mystery_ca_gas_surcharge')
+data = (work_dir / 'data')
+raw_data = (data / 'raw')
+code = Path.cwd() 
 
 # define function for fetching cpi data via API
 def fetch_cpi_data(start_year, end_year):
@@ -19,7 +21,6 @@ def fetch_cpi_data(start_year, end_year):
     )
     json_data = json.loads(p.text)
     return json_data['Results']['series']
-
 
 # Combine data from three separate API requests
 # this is necessary because BLS's API requests are limited to 10 years each, but i want 2000-2024
@@ -58,5 +59,5 @@ print(cpi_df)
 print(cpi_df.columns)
 # finally let's save as a csv
 cpi_df.to_csv(
-    '/Users/danpost/Dropbox/Myster_Gas_Surcharge/Analysis/Data/cpi.csv', index=False
+    f'{data}/cpi.csv', index=False
 )

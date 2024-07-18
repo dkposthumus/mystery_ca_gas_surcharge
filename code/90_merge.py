@@ -1,15 +1,26 @@
-import pandas as pd
 import matplotlib.pyplot as plt
+import requests
+import pandas as pd
+import json
+import requests
+import json
+import pandas as pd
+from pathlib import Path
+# let's create a set of locals referring to our directory and working directory 
+home_dir = Path.home()
+work_dir = (home_dir / 'mystery_ca_gas_surcharge')
+data = (work_dir / 'data')
+raw_data = (data / 'raw')
+code = Path.cwd() 
 
-data_path = '/Users/danpost/Dropbox/Myster_Gas_Surcharge/Analysis/Data'
 # let's start by importing the cpi data as a pandas dataframe
-cpi = pd.read_csv(f'{data_path}/cpi.csv')
+cpi = pd.read_csv(f'{data}/cpi.csv')
 # now let's import the retail gas prices
-gas_retail_df = pd.read_csv(f'{data_path}/gas_retail.csv')
+gas_retail_df = pd.read_csv(f'{data}/gas_retail.csv')
 # spot gas prices
-spot_prices_df = pd.read_csv(f'{data_path}/spot_prices.csv')
+spot_prices_df = pd.read_csv(f'{data}/spot_prices.csv')
 # tax date
-gas_taxes_df = pd.read_csv(f'{data_path}/gas_taxes.csv')
+gas_taxes_df = pd.read_csv(f'{data}/gas_taxes.csv')
 # let's merge on date for each of the 4 datasets of interest:
 master_df = pd.merge(cpi, gas_retail_df, on='date', how='outer')
 master_df = pd.merge(master_df, spot_prices_df, on='date', how='outer')
@@ -79,4 +90,4 @@ for var in prices:
     )
 
 # let's save the master data as a csv
-master_df.to_csv(f'{data_path}/master.csv', index=True)
+master_df.to_csv(f'{data}/master.csv', index=True)
