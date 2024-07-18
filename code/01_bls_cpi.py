@@ -1,7 +1,11 @@
 import requests
 import json
 import pandas as pd
-data_path = "/Users/danpost/Dropbox/Mystery_Gas_Surcharge/Analysis/Data"
+from pathlib import Path
+
+raw_data_folder = Path("data/raw/")
+clean_data_folder = Path("data/")
+
 # define function for fetching cpi data via API
 def fetch_cpi_data(start_year, end_year):
     headers = {'Content-type': 'application/json'}
@@ -44,5 +48,5 @@ cpi_df = cpi_df.drop(['year','month'],axis=1)
 # now let's check the dataframe
 print(cpi_df)
 print(cpi_df.columns)
-# finally let's save as a csv 
+# finally let's save as a csv
 cpi_df.to_csv('/Users/danpost/Dropbox/Myster_Gas_Surcharge/Analysis/Data/cpi.csv', index=False)
