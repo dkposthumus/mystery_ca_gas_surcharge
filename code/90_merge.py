@@ -57,7 +57,7 @@ master_df['national retail excl. ca (nominal)'] = (
 # now i want to convert the NOMINAL prices into REAL prices
 # let's fix the march 2017 observation of CPI as our baseline and make a price deflator variable
 # Severin anchors CPI to the same month/year
-fixed_cpi = master_df.loc['03/01/2017', 'all-urban cpi']
+fixed_cpi = master_df.loc['10/01/2023', 'all-urban cpi']
 master_df['price deflator'] = master_df['all-urban cpi'] / fixed_cpi
 
 # CA state sales tax on gas -- separate from the excise tax -- has been fixed at 2.25% since 03/01/2011. We can add the assum 1% local sales tax and input a constant 3.25% variable, beginning with 03/01/2011
