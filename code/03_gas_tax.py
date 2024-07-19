@@ -1,9 +1,6 @@
 import requests
 import pandas as pd
 import json
-import requests
-import json
-import pandas as pd
 from pathlib import Path
 # let's create a set of locals referring to our directory and working directory 
 home_dir = Path.home()
@@ -59,7 +56,7 @@ print(gas_sales_tax_dot_df)
 # drop observations relating to the US total gasoline sold, the federal tax, and California
 for group in ['US Total', 'Federal Tax', 'California']:
     avg_gas_state_tax_df = gas_sales_tax_dot_df[gas_sales_tax_dot_df['state'] != group]
-    # I need to back fill the tax data so that there are no missings
+    # I need to forward fill the tax data so that there are no missings
     # this ensures that every month from a year has a constant tax rate
 avg_gas_state_tax_df['gas excise tax'] = avg_gas_state_tax_df['gas excise tax'].fillna(
     method='ffill'

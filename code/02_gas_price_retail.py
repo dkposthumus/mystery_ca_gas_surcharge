@@ -1,9 +1,6 @@
 import requests
 import pandas as pd
 import json
-import requests
-import json
-import pandas as pd
 from pathlib import Path
 # let's create a set of locals referring to our directory and working directory 
 home_dir = Path.home()
