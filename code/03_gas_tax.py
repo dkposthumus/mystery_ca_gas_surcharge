@@ -2,6 +2,7 @@ import requests
 import pandas as pd
 import json
 from pathlib import Path
+import numpy as np
 # let's create a set of locals referring to our directory and working directory 
 home_dir = Path.home()
 work_dir = (home_dir / 'mystery_ca_gas_surcharge')
@@ -54,13 +55,16 @@ print(gas_sales_tax_dot_df)
 
 # now let's create a weighted average the sales tax for the states EXCEPT California
 # drop observations relating to the US total gasoline sold, the federal tax, and California
-for group in ['US Total', 'Federal Tax', 'California']:
-    avg_gas_state_tax_df = gas_sales_tax_dot_df[gas_sales_tax_dot_df['state'] != group]
+states_to_remove = ['US Total', 'Federal Tax', 'California']
+# Filter the DataFrame to exclude rows where 'state' is in states_to_remove
+avg_gas_state_tax_df = gas_sales_tax_dot_df[~gas_sales_tax_dot_df['state'].isin(states_to_remove)]
     # I need to forward fill the tax data so that there are no missings
     # this ensures that every month from a year has a constant tax rate
-avg_gas_state_tax_df['gas excise tax'] = avg_gas_state_tax_df['gas excise tax'].fillna(
-    method='ffill'
-)
+    # let's do the same thing for the values of gas sales, ensuring that our weighted average below isn't distorted
+for var in ['gas excise tax']:
+    avg_gas_state_tax_df[var] = avg_gas_state_tax_df.groupby('state')[var].fillna(
+        method='ffill'
+    )
 # now I'm going to calculate the average tax rate for all states, grouped by date and weighted by their gasoline sold
 avg_gas_state_tax_df = avg_gas_state_tax_df.groupby('date').apply(
     lambda x: (x['gas excise tax'] * x['value']).sum() / x['value'].sum()
@@ -93,29 +97,78 @@ gas_sales_dot_filtered_df['ca share of usa gas'] = (
     gas_sales_dot_filtered_df['ca total gas sold']
     / gas_sales_dot_filtered_df['usa total gas sold']
 )
+# this variable is missing for some dates; thus, for those dates where it is missing only i will be replacing it with 0.1, borrowing severin's assumption
+gas_sales_dot_filtered_df['ca share of usa gas'].fillna(0.1, inplace=True)
 print(gas_sales_dot_filtered_df)
 
 # now let's focus on pulling, together, 1) california's tax rate and the federal tax rate
-states_of_interest = ['Federal Tax', 'California']
+states_of_interest = ['Federal Tax']
 # filter the tax dataset so that it ONLY includes california state and federal tax rates
-gas_fed_ca_tax_df = gas_tax_dot_df[gas_tax_dot_df['state'].isin(states_of_interest)]
-gas_fed_ca_tax_df = gas_fed_ca_tax_df.pivot_table(
+gas_fed_tax_df = gas_tax_dot_df[gas_tax_dot_df['state'].isin(states_of_interest)]
+gas_fed_tax_df = gas_fed_tax_df.pivot_table(
     index='date', columns='state', values='gas excise tax', fill_value=None
 )
 # rename appropriately
-gas_fed_ca_tax_df = gas_fed_ca_tax_df.rename(
-    columns={'California': 'ca state gas tax', 'Federal Tax': 'federal gas tax'}
+gas_fed_tax_df = gas_fed_tax_df.rename(
+    columns={'Federal Tax': 'federal gas tax'}
 )
-print(gas_fed_ca_tax_df)
+print(gas_fed_tax_df)
+# now hard-code california excise tax rate
+ca_tax = {
+    'date': [
+        '07/01/2024',
+        '07/01/2023',
+        '07/01/2022',
+        '07/01/2021',
+        '07/01/2020',
+        '07/01/2019',
+        '07/01/2018',
+        '11/01/2017',
+        '07/01/2017',
+        '07/01/2016',
+        '07/01/2015',
+        '04/01/2015',
+        '07/01/2014',
+        '07/01/2013',
+        '07/01/2012',
+        '04/01/2012',
+        '07/01/2011',
+        '04/01/2011',
+        '07/01/2010',
+        '04/01/2010',
+    ],
+    'ca state gas tax': [
+        0.596,
+        0.579,
+        0.539,
+        0.511,
+        0.505,
+        0.473,
+        0.417,
+        0.417,
+        0.297,
+        0.278,
+        0.300,
+        0.360,
+        0.360,
+        0.395,
+        0.360,
+        0.357,
+        0.357,
+        0.353,
+        0.353,
+        0.180,
+    ]
+}
+ca_tax_df = pd.DataFrame(ca_tax)
+ca_tax_df['date'] = pd.to_datetime(ca_tax_df['date'])
 # now merge four datasets together
-gas_tax_df = pd.merge(
-    gas_sales_dot_filtered_df, avg_gas_state_tax_df, on='date', how='outer'
-)
-gas_tax_df = pd.merge(gas_tax_df, gas_fed_ca_tax_df, on='date', how='outer')
-# backfill missing observations for the tax variables related to Ca and Federal tax
+gas_tax_df = pd.merge(gas_sales_dot_filtered_df, avg_gas_state_tax_df, on='date', how='outer')
+gas_tax_df = pd.merge(gas_tax_df, ca_tax_df, on='date', how='outer')
+gas_tax_df = pd.merge(gas_tax_df, gas_fed_tax_df, on='date', how='outer')
+# frontfill missing observations for the tax variables related to Ca and Federal tax
 gas_tax_df[['ca state gas tax', 'federal gas tax']] = gas_tax_df[
     ['ca state gas tax', 'federal gas tax']
 ].fillna(method='ffill')
 # let's check the dataset:
-print(gas_tax_df)
 gas_tax_df.to_csv(f'{data}/gas_taxes.csv', index=False)

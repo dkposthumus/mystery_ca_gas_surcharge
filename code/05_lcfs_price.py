@@ -2,7 +2,7 @@ import requests
 import pandas as pd
 import json
 from pathlib import Path
-
+import numpy as np
 
 # let's create a set of locals referring to our directory and working directory 
 home_dir = Path.home()
@@ -31,7 +31,7 @@ lcfs_price_df['year'] = lcfs_price_df['date'].dt.year
 # now i want to esssentially create a list of constants
     # these constants are taken from the California Air Resources Board's LCFS calculator, found here: 
         # https://ww2.arb.ca.gov/resources/documents/lcfs-data-dashboard
-gas_ci_max = 99.78
+lcfs_price_df['gas_ci_max'] = np.where(lcfs_price_df['year'] > 2018, 100.82, 99.78)
 gas_energy_density = 119.53
 ethanol_energy_density = 81.51
 # there is one constant that changes over time -- a gasoline CI standard so let's hard code a dataframe consisting of those values and then merge on year with lcfs_price_df
@@ -69,7 +69,7 @@ lcfs_price_df = pd.merge(
 )
 
 # now let's create a new variable, this one in terms of $/gal capturing the LCF's cost per gallon of gas
-lcfs_price_df['lcfs cost'] = (-1) * ((lcfs_price_df['gas ci standard'] - gas_ci_max)*(gas_energy_density)*0.9 + (lcfs_price_df['gas ci standard']-79.9)*0.1*ethanol_energy_density)*lcfs_price_df['lcfs credit price']/1000000
+lcfs_price_df['lcfs cost'] = (-1) * ((lcfs_price_df['gas ci standard'] - lcfs_price_df['gas_ci_max'])*(gas_energy_density)*0.9 + (lcfs_price_df['gas ci standard']-79.9)*0.1*ethanol_energy_density)*lcfs_price_df['lcfs credit price']/1000000
 
 # the date variable is incorrect for this data; right now, instead of listing September 2017 as September 01, 2017, the date variable is listing September 17, 2017
 lcfs_price_df['month'] = lcfs_price_df['date'].dt.month
@@ -78,7 +78,7 @@ lcfs_price_df['day'] = 1
 # now over-write our current date variable with a date variable containing info from these 3 
 lcfs_price_df['date'] = pd.to_datetime(dict(year=lcfs_price_df['year'], month=lcfs_price_df['month'], day=lcfs_price_df['day']))
 # now let's drop the unnecessary lcfs price variable
-lcfs_price_df = lcfs_price_df.drop(['lcfs credit price', 'year', 'month', 'day'], axis=1)
+lcfs_price_df = lcfs_price_df.drop(['year', 'month', 'day', 'gas_ci_max', 'gas ci standard'], axis=1)
 # let's check the dataset:
 print(lcfs_price_df)
 lcfs_price_df.to_csv(f'{data}/lcfs.csv', index=False)
