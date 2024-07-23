@@ -9,6 +9,7 @@ work_dir = (home_dir / 'mystery_ca_gas_surcharge')
 data = (work_dir / 'data')
 raw_data = (data / 'raw')
 code = Path.cwd() 
+output = (work_dir / 'output')
 
 # now let's import the master dataset 
 master_df = pd.read_csv(f'{data}/master.csv')
@@ -41,6 +42,7 @@ plt.axhline(0, color='black', linewidth=1.5, linestyle='-', label='')
 
 plt.legend()
 plt.show()
+plt.savefig(f'{output}/unexplained_differential.png')
 
 # now let's make the same plot, but for CA's margin
 plt.figure(figsize=(10, 6))
@@ -60,6 +62,7 @@ plt.axhline(0, color='black', linewidth=1.5, linestyle='-', label='')
 
 plt.legend()
 plt.show()
+plt.savefig(f'{output}/ca_margin.png')
 
 # now the same plot, but for the spot price differential
 plt.figure(figsize=(10, 6))
@@ -67,7 +70,7 @@ plt.plot(master_df.index, master_df['spot price differential (real)'], label='Sp
 plt.plot(master_df.index, master_df['annual average spot price differential (real)'], label='Annual Average Spot Price Differential (Real)', color='black', linewidth=3)
 plt.title('LA Spot Price versus NY/Gulf Average Spot Price (in $2023), 2012-2024')
 plt.xlabel('Date')
-plt.ylabel('Margin')
+plt.ylabel('Difference')
 plt.grid(True)
 ax = plt.gca()
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
@@ -79,6 +82,7 @@ plt.axhline(0, color='black', linewidth=1.5, linestyle='-', label='')
 
 plt.legend()
 plt.show()
+plt.savefig(f'{output}/spot_differential.png')
 
 # now plot together the mystery gas surcharge and the spot price differential
 plt.figure(figsize=(10, 6))
@@ -98,3 +102,4 @@ plt.axhline(0, color='black', linewidth=1.5, linestyle='-', label='')
 
 plt.legend()
 plt.show()
+plt.savefig(f'{output}/mgs_spot_differential.png')
