@@ -1,6 +1,7 @@
 import pandas as pd
 from pathlib import Path
 import numpy as np
+import calendar
 
 # let's create a set of locals referring to our directory and working directory 
 home_dir = Path.home()
@@ -9,36 +10,12 @@ data = (work_dir / 'data')
 raw_data = (data / 'raw')
 code = Path.cwd() 
 
-# let's start by importing the cpi data as a pandas dataframe
-cpi = pd.read_csv(f'{data}/cpi.csv')
-# now let's import the retail gas prices
-gas_retail_df = pd.read_csv(f'{data}/gas_retail.csv')
-# spot gas prices
-spot_prices_df = pd.read_csv(f'{data}/spot_prices.csv')
-# tax data
-gas_taxes_df = pd.read_csv(f'{data}/gas_taxes.csv')
-# LCFS data 
-lcfs_df = pd.read_csv(f'{data}/lcfs.csv')
-# UST data 
-ust_df = pd.read_csv(f'{data}/ust.csv')
-# CAX data
-cax_df = pd.read_csv(f'{data}/cax.csv')
-# let's merge on date for each of the 4 datasets of interest:
-master_df = pd.merge(cpi, gas_retail_df, on='date', how='outer')
-master_df = pd.merge(master_df, spot_prices_df, on='date', how='outer')
-master_df = pd.merge(master_df, gas_taxes_df, on='date', how='outer')
-master_df = pd.merge(master_df, lcfs_df, on='date',how='outer')
-master_df = pd.merge(master_df, ust_df, on='date',how='outer')
-master_df = pd.merge(master_df, cax_df, on='date',how='outer')
-# now i need to forward fill some variables since they're currently only non-missing for the first day of its duration
-for ffill_var in ['ust fee', 'cax cost']:
-    master_df[ffill_var] = master_df[ffill_var].fillna(
-    method='ffill'
-)
-master_df['date'] = pd.to_datetime(master_df['date'])
+master_df = pd.read_csv(f'{data}/master.csv')
 
-# Set 'Date' as index
+# set date as variable
 master_df.set_index('date', inplace=True)
+# make sure that date variable is datetime
+master_df.index = pd.to_datetime(master_df.index)
 
 # Severin assumes that the NOMINAL cost premium to produce CA's cleaner-burning gasoline blend is CONSTANT, at 10 cents 
 master_df['carb cost premium'] = 0.1
@@ -66,7 +43,8 @@ for var in ['ust fee', 'cax cost', 'lcfs cost']:
 # now i want to convert the NOMINAL prices into REAL prices
 # let's fix the march 2017 observation of CPI as our baseline and make a price deflator variable
 # Severin anchors CPI to the same month/year
-fixed_cpi = master_df.loc['10/01/2023', 'all-urban cpi']
+cpi_anchor = pd.to_datetime('2023-03-01')
+fixed_cpi = master_df.loc[cpi_anchor, 'all-urban cpi']
 master_df['price deflator'] = master_df['all-urban cpi'] / fixed_cpi
 
 # CA state sales tax on gas -- separate from the excise tax -- has been fixed at 2.25% since 03/01/2011. We can add the assum 1% local sales tax and input a constant 3.25% variable, beginning with 03/01/2011
@@ -111,6 +89,33 @@ for var in prices:
     master_df[f'{var} (real)'] = (
         master_df[f'{var} (nominal)'] / master_df['price deflator']
     )
+
+# let's find the annual average, grouping by year
+master_df['year'] = master_df.index.year
+
+# for the next daily calculation i need a variable capturing the number of days in each month
+master_df['month'] = master_df.index.month
+def days_in_month(year, month):
+    return calendar.monthrange(int(year), int(month))[1]
+# Apply the function to create the 'days in month' variable
+master_df['days in month'] = master_df.apply(lambda row: days_in_month(row['year'], row['month']), axis=1)
+
+# I want to find the total cost per month paid by california drivers
+    # this formula is simply the total gas sold in california monthly x the unexplained differential
+    # note: i'm using the REAL unexplained differential
+master_df['monthly cost of surcharge (millions)'] = (master_df['unexplained differential (real)']*master_df['ca total gas sold'])/1000000
+# now let's find the average per day, using the 12-month moving average divided by 30.5
+# now divide that moving average by 30.5 and multiply by unexplained differential to find the daily average cost
+master_df['average daily cost of mgs (millions)'] = ((master_df['ca total gas sold']/master_df['days in month'])*master_df['unexplained differential (real)'])/1000000
+
+# next i want to calculate a variable that severin refers to as CA Margin, 
+# which is the retail price of CA gas minus the crude price and fees/taxes in CA
+master_df['ca margin (real)'] = (master_df['california gas (retail) (nominal)'] - (master_df['uk brent (nominal)']) - master_df['ca total fees and taxes'])/master_df['price deflator']
+
+# now let's calculate the difference between an average of the new york and gulf spot prices and LA spot price:
+master_df['spot price differential (real)'] = (master_df['la spot price (nominal)'] - ((master_df['gulf spot price (nominal)']+master_df['ny spot price (nominal)'])/2))/master_df['price deflator']
+
+master_df['mgs - spot price (real)'] = master_df['unexplained differential (real)'] - master_df['spot price differential (real)']
 
 # let's save the master data as a csv
 master_df.to_csv(f'{data}/master.csv', index=True)

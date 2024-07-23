@@ -39,7 +39,8 @@ key_var = [
     'ca total fees and taxes', 'cax cost', 'lcfs cost', 'national retail excl. ca (nominal)',
     'california gas (retail) (nominal)', 'average state tax excl. ca', 
     'ca state.local tax cost', 'unexplained differential (real)', 
-    
+    'ca total gas sold', 'monthly cost of surcharge (millions)',
+    'average daily cost of mgs (millions)'
 ]
 for var in key_var: 
     plt.figure(figsize=(10, 6))
@@ -52,5 +53,5 @@ for var in key_var:
     ax = plt.gca()
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
     ax.xaxis.set_major_locator(mdates.YearLocator(1))
-    ax.set_xlim([start_date, comp_df.index.max()])  # Set x-axis limits
+    ax.set_xlim([start_date, comp_df.index.max()]) 
     plt.show()

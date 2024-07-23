@@ -22,7 +22,9 @@ cols_keep = [
     'REAL ($current month) Unexplained Differential',
     'CA Regular All Formulations Retail Gasoline Prices (Dollars per Gallon)',
     'US state excise tax without CA',
-    'CA UST', 'CA STATE EXCISE GASOLINE', 'TOT CA GAS TAXES'
+    'CA UST', 'CA STATE EXCISE GASOLINE', 'TOT CA GAS TAXES',
+    'Quantity', 'REAL ($current month) Extra Payment in $mil',
+    'Daily Excess Payment (millions)',
 ]
 severin_df = severin_df[cols_keep]
 # now i want to rename all these variables:
@@ -45,6 +47,9 @@ severin_df = severin_df.rename(
         'CA UST' : 'ust fee (severin)', 
         'CA STATE EXCISE GASOLINE' : 'ca state gas tax (severin)',
         'TOT CA GAS TAXES': 'ca state.local tax cost (severin)',
+        'Quantity': 'ca total gas sold (severin)',
+        'REAL ($current month) Extra Payment in $mil': 'monthly cost of surcharge (millions) (severin)',
+        'Daily Excess Payment (millions)': 'average daily cost of mgs (millions) (severin)'
     }
 )
 # let's make a proper date variable
