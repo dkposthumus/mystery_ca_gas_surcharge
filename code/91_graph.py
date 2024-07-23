@@ -41,8 +41,8 @@ plt.axvline(pd.to_datetime('2015-02-18'), color='red', linewidth=2, linestyle='-
 plt.axhline(0, color='black', linewidth=1.5, linestyle='-', label='')
 
 plt.legend()
-plt.show()
 plt.savefig(f'{output}/unexplained_differential.png')
+plt.show()
 
 # now let's make the same plot, but for CA's margin
 plt.figure(figsize=(10, 6))
@@ -61,8 +61,8 @@ plt.axvline(pd.to_datetime('2015-02-18'), color='red', linewidth=2, linestyle='-
 plt.axhline(0, color='black', linewidth=1.5, linestyle='-', label='')
 
 plt.legend()
-plt.show()
 plt.savefig(f'{output}/ca_margin.png')
+plt.show()
 
 # now the same plot, but for the spot price differential
 plt.figure(figsize=(10, 6))
@@ -81,8 +81,8 @@ plt.axvline(pd.to_datetime('2015-02-18'), color='red', linewidth=2, linestyle='-
 plt.axhline(0, color='black', linewidth=1.5, linestyle='-', label='')
 
 plt.legend()
-plt.show()
 plt.savefig(f'{output}/spot_differential.png')
+plt.show()
 
 # now plot together the mystery gas surcharge and the spot price differential
 plt.figure(figsize=(10, 6))
@@ -101,5 +101,5 @@ plt.axvline(pd.to_datetime('2015-02-18'), color='red', linewidth=2, linestyle='-
 plt.axhline(0, color='black', linewidth=1.5, linestyle='-', label='')
 
 plt.legend()
-plt.show()
 plt.savefig(f'{output}/mgs_spot_differential.png')
+plt.show()
