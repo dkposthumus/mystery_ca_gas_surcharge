@@ -44,6 +44,13 @@ gas_sales_dot_df.drop(columns=['fuel_type'], inplace=True)
 gas_sales_dot_df['date'] = pd.to_datetime(
     gas_sales_dot_df['date'], format='%m/%d/%y %H:%M'
 )
+
+# this data only begins in 2012; to extend my time-series, i'm going to pull in and concatenate historical data dating back to 2000
+gas_historical_df = pd.read_csv(f'{data}/gas_historical.csv')
+gas_historical_df['date'] = pd.to_datetime(gas_historical_df['date'])
+
+gas_sales_dot_df = pd.concat([gas_sales_dot_df, gas_historical_df], ignore_index=True)
+
 # let's check the data
 print(gas_sales_dot_df)
 print(gas_tax_dot_df)
