@@ -47,8 +47,6 @@ cpi_anchor = pd.to_datetime('2023-03-01')
 fixed_cpi = master_df.loc[cpi_anchor, 'all-urban cpi']
 master_df['price deflator'] = master_df['all-urban cpi'] / fixed_cpi
 
-# now let's front fill that variable 
-master_df['ca state.local tax rate'] = master_df['ca state.local tax rate'].fillna(method='ffill')
 # now multiply by california's nominal retail gas price to find the cost per gallon, INCLUSIVE of the gas tax
 master_df['ca state.local tax cost'] = (master_df['ca state.local tax rate']/(master_df['ca state.local tax rate']+1))*master_df['california gas (retail) (nominal)']
 
