@@ -26,30 +26,13 @@ gas_tax_dot_df = gas_tax_dot_df.drop(['fuel_type'], axis=1)
 gas_tax_dot_df = gas_tax_dot_df.rename(
     columns={'MMFR_year': 'date', 'rate': 'gas excise tax'}
 )
-# right now, the values are in cents/gallon; we want to make it dollars/gallon, so multiply by 0.01 (same as dividing by 100)
-gas_tax_dot_df['gas excise tax'] = gas_tax_dot_df['gas excise tax'].multiply(0.01)
 # now let's format the dates as date
 gas_tax_dot_df['date'] = pd.to_datetime(gas_tax_dot_df['date'], format='%Y')
-
-# now i want to import as a csv of state-by-state historical data on retail gasoline sales, which ill use to find the number of gallons sold in california relative to the US
-# first let's define the list of columns that i'm actually interested in importing
-columns_to_keep = ['state', 'value', 'date', 'fuel_type']
-# now let's import the csv, including only the columns listed above that are necessary
-gas_sales_dot_df = pd.read_csv(gas_sales_dot, usecols=columns_to_keep)
-# I am only interested in GASOLINE, not the special fuels -- so let's keep only the gasoline observations
-gas_sales_dot_df = gas_sales_dot_df[gas_sales_dot_df['fuel_type'] == 'Gasoline/gasohol']
-# now the fuel_type variable is no longer needed, as all observations are gasoline
-gas_sales_dot_df.drop(columns=['fuel_type'], inplace=True)
-# format date as a true date variable
-gas_sales_dot_df['date'] = pd.to_datetime(
-    gas_sales_dot_df['date'], format='%m/%d/%y %H:%M'
-)
-
-# this data only begins in 2012; to extend my time-series, i'm going to pull in and concatenate historical data dating back to 2000
-gas_historical_df = pd.read_csv(f'{data}/gas_historical.csv')
-gas_historical_df['date'] = pd.to_datetime(gas_historical_df['date'])
-
-gas_sales_dot_df = pd.concat([gas_sales_dot_df, gas_historical_df], ignore_index=True)
+gas_tax_historical_df = pd.read_csv(f'{data}/gas_tax_historical.csv')
+gas_tax_dot_df = pd.concat([gas_tax_dot_df, gas_tax_historical_df], ignore_index=True)
+gas_tax_dot_df['gas excise tax'] = pd.to_numeric(gas_tax_dot_df['gas excise tax'], errors='coerce')
+gas_tax_dot_df['gas excise tax'] = gas_tax_dot_df['gas excise tax'].multiply(0.01)
+gas_tax_dot_df['date'] = pd.to_datetime(gas_tax_dot_df['date'])
 
 # let's check the data
 print(gas_sales_dot_df)
@@ -58,7 +41,9 @@ print(gas_tax_dot_df)
 gas_sales_tax_dot_df = pd.merge(
     gas_tax_dot_df, gas_sales_dot_df, on=['state', 'date'], how='outer'
 )
-print(gas_sales_tax_dot_df)
+gas_sales_tax_dot_df['value'] = pd.to_numeric(gas_sales_tax_dot_df['value'], errors='coerce')
+
+gas_sales_tax_dot_df.to_csv(f'{data}/test.csv', index=False)
 
 # now let's create a weighted average the sales tax for the states EXCEPT California
 # drop observations relating to the US total gasoline sold, the federal tax, and California
@@ -72,6 +57,7 @@ for var in ['gas excise tax']:
     avg_gas_state_tax_df[var] = avg_gas_state_tax_df.groupby('state')[var].fillna(
         method='ffill'
     )
+avg_gas_state_tax_df = avg_gas_state_tax_df.dropna(subset=['value'])
 # now I'm going to calculate the average tax rate for all states, grouped by date and weighted by their gasoline sold
 avg_gas_state_tax_df = avg_gas_state_tax_df.groupby('date').apply(
     lambda x: (x['gas excise tax'] * x['value']).sum() / x['value'].sum()
