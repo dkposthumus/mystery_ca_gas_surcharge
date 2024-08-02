@@ -118,14 +118,17 @@ cax = {
 }
 # Creating DataFrame
 cax_df = pd.DataFrame(cax)
+# even though this is the correct data regarding CAX credits, this regulation was only enforced starting
+# on January 01, 2015. So drop anny before that 
+cax_df['date'] = pd.to_datetime(cax_df['date'])
+cutoff_date = pd.to_datetime('2015-01-01')
+cax_df = cax_df[cax_df['date'] >= cutoff_date]
 # okay so the auction price is the cost per tonne of CO2e
     # Severin assumes that each gallon of e-10 ethanol gas has 0.007902 tonnes of C02e
     # thus, to find the cost per gallon I multiply the whole column by 0.007902
 cax_df['cax cost'] = cax_df['cax price']*0.007902
 # now i can drop the cax price to de-clutter the data
 cax_df = cax_df.drop(['cax price'], axis=1)
-# now I want to make the date variable a pandas datetime formatted variable:
-cax_df['date'] = pd.to_datetime(cax_df['date'])
 # check the dataframe 
 print(cax_df)
 cax_df.to_csv(f'{data}/cax.csv', index=False)
