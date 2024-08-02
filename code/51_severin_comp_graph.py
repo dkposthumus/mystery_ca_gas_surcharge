@@ -24,12 +24,12 @@ comp_df['date'] = pd.to_datetime(comp_df['date'])
 comp_df.set_index('date', inplace=True)
 
 # plots start at 01/01/2014: 
-start_date = pd.to_datetime('2010-01-01')
+start_date = pd.to_datetime('2000-01-01')
 
 # for the sake of comparison:
     # since severin includes the federal tax in his calculation of CA's total fees/taxes, add it in here
     # since severin excludes it, subtract the carb cost premium
-comp_df['ca total fees and taxes'] = comp_df['ca total fees and taxes'] + comp_df['federal gas tax'] - comp_df['carb cost premium']
+comp_df['ca total fees and taxes'] = comp_df['ca total fees and taxes'] + 18.4 - comp_df['carb cost premium']
 
 # also add excise and state/local sales tax together
 comp_df['ca state.local tax cost'] = comp_df['ca state.local tax cost'] + comp_df['ca state gas tax']

@@ -1,0 +1,38 @@
+\documentclass{article}
+\usepackage[landscape, margin=1in]{geometry}
+\usepackage[flushleft]{threeparttable}
+
+\begin{document}
+
+\begin{table}[!h]
+	\begin{threeparttable}
+		\caption{CA Environmental Programs}
+			\begin{tabular}{l l c l} 
+				Program Name & Years & Average Cost & Method of Cost Calculation \\ 
+				\hline
+				\textbf{Cap-and-Trade (CAX)} 
+					& \vtop{\hbox{\strut November, 2012 - July, 2021}\hbox{\strut August, 2021 - Present}} 
+					& \vtop{\hbox{\strut \$0.112}\hbox{\strut \$0.248}} 
+					& \vtop{\hbox{\strut California's Air Resources Board (ARB) reports historical} \hbox{\strut auction price of one ton of carbon; this cost is converted into}\hbox{\strut the cost per gallon of E-10 gasoline.}} \\ 
+				\vspace{0.1in} \\
+				\vtop{\hbox{\strut \textbf{Low Carbon Fuel}}\hbox{\strut \textbf{Standard (LCFS)}}} 
+					& \vtop{\hbox{\strut January, 2016 - December, 2017}\hbox{\strut January, 2018 - \hfill Present}} 
+					& \vtop{\hbox{\strut \$0.028}\hbox{\strut \$0.132}} 
+					& \vtop{\hbox{\strut LCFS Credit Prices are taken from the CA ARB, and then}\hbox{\strut plugged into the ARB's value calculator assuming the maximum}\hbox{\strut pass-through cost for gasoline.}} \\
+				\vspace{0.1in} \\
+				\vtop{\hbox{\strut \textbf{Underground Storage Tank}}\hbox{\strut \textbf{Maintenance Fee (UST)}}} 
+					& \vtop{\hbox{\strut January, 1991 - \hfill December, 2014}\hbox{\strut January, 2015 - \hfill Present}} 
+					& \vtop{\hbox{\strut \$0.0115}\hbox{\strut \$0.020}} & Historical UST fees are taken directly from the CDTFA's website. \\
+				\hline
+			\end{tabular}
+			\begin{tablenotes}
+				\small
+				\item All costs listed are in nominal dollars per gallon of gasoline.
+				\item It is assumed that gasoline sold is E-10.
+				\item It is assumed that E-10 gasoline contains 0.007902 tonnes of $\texttt{CO}_2\texttt{e}$.
+			\end{tablenotes}
+	\end{threeparttable}
+\end{table}
+
+
+\end{document}
