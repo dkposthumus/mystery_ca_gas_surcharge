@@ -110,7 +110,7 @@ master_df['ca margin (real)'] = (master_df['california gas (retail) (nominal)'] 
 # now let's calculate the difference between an average of the new york and gulf spot prices and LA spot price:
 master_df['spot price differential (real)'] = (master_df['la spot price (nominal)'] - ((master_df['gulf spot price (nominal)']+master_df['ny spot price (nominal)'])/2))/master_df['price deflator']
 
-master_df['mgs - spot price (real)'] = master_df['unexplained differential (real)'] - master_df['spot price differential (real)']
+master_df['mgs - spot price differential (real)'] = master_df['unexplained differential (real)'] - master_df['spot price differential (real)']
 
 # let's save the master data as a csv
 master_df.to_csv(f'{data}/master.csv', index=True)

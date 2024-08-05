@@ -16,38 +16,83 @@ output = (work_dir / 'output')
 
 # to decompose the MGS i need to find the differences between CA and the rest of the country:
 master_df = pd.read_csv(f'{data}/master.csv')
-master_df['price difference'] = master_df['california gas (retail) (nominal)'] - master_df['national gas (retail) (nominal)']
-master_df['excise tax difference'] = -1*(master_df['ca state gas tax'] - master_df['average state tax excl. ca'])
-for var in ['ca state.local tax cost', 'lcfs cost', 'ust fee', 'cax cost', 'carb cost premium']:
-    master_df[var] = -1*master_df[var]
-master_df['unexplained differential'] = master_df['unexplained differential (nominal)']
+master_df['price difference'] = master_df['california gas (retail) (nominal)'] - master_df['national retail excl. ca (nominal)']
+master_df['excise tax difference'] = (master_df['ca state gas tax'] - master_df['average state tax excl. ca'])
+master_df['unexplained differential'] = master_df['unexplained differential (nominal)']/master_df['price deflator']
 vars_to_plot = ['price difference', 'excise tax difference', 'ca state.local tax cost',
-                'lcfs cost', 'ust fee', 'cax cost', 'carb cost premium', 
-                'unexplained differential']
+                'lcfs cost', 'ust fee', 'cax cost', 'carb cost premium']
 for var in vars_to_plot:
     master_df[var] = master_df[var]/master_df['price deflator']
 
 master_df['date'] = pd.to_datetime(master_df['date'])
 cut_off_date = pd.to_datetime('2000-01-01')
 master_df = master_df[master_df['date']>=cut_off_date]
-master_df['4_year_period'] = (master_df['date'].dt.year // 4) * 4
-# Group by the 3-year period and calculate the mean for each group
-collapsed_df = master_df.groupby('4_year_period')[vars_to_plot].mean().reset_index()
-collapsed_df = collapsed_df[collapsed_df['4_year_period'] != 2024]
+master_df.set_index('date', inplace=True)
+master_df['year'] = master_df.index.year
+annual_df = master_df.groupby('year').mean()
 
-bar_width = 0.1
-index = np.arange(len(collapsed_df))
-plt.figure(figsize=(14,8))
+# Define variables to plot
+vars_to_plot = ['excise tax difference', 'ca state.local tax cost', 'lcfs cost',
+                'ust fee', 'cax cost', 'carb cost premium']
+positive_vars = annual_df[vars_to_plot].clip(lower=0)
+negative_vars = annual_df[vars_to_plot].clip(upper=0)
+
+fig, ax = plt.subplots(figsize=(14, 7))
+
+bar_width = 0.35
+years = annual_df.index
+ax.bar(years - bar_width/2, annual_df['price difference'], 
+       width=bar_width, color='blue', label='Price Difference')
+bottom = np.zeros(len(annual_df))
+colors = ['#FF9999', '#66B3FF', '#99FF99', '#FFCC99', '#C2C2C2', '#FFB266']
 for i, var in enumerate(vars_to_plot):
-    plt.bar(index + i * bar_width, collapsed_df[var], width=bar_width, label=var)
+    ax.bar(years + bar_width/2, positive_vars[var],
+           bottom=bottom, width=bar_width, label=var, color=colors[i])
+    bottom += positive_vars[var]
+bottom = np.zeros(len(annual_df))
+for i, var in enumerate(vars_to_plot):
+    ax.bar(years + bar_width/2, negative_vars[var], 
+           bottom=bottom, width=bar_width, color=colors[i])
+    bottom += negative_vars[var]
+ax.plot(annual_df.index, annual_df['unexplained differential'], 
+        color='purple', linewidth=5, label='Unexplained Differential', marker='o')
+plt.axvline(x=2015, 
+            color='red', linewidth=2, linestyle='--', 
+            label='Torrance Refinery Fire, Feb. 18, 2015')
+ax.set_title('Comparison of Price Difference and Other Components with Unexplained Differential')
+ax.set_xlabel('Year')
+ax.set_ylabel('Value')
+ax.axhline(0, color='black', linewidth=2)
+ax.legend(loc='upper left', bbox_to_anchor=(1,1), ncol=1)
+plt.xticks(ticks=years, labels=years, rotation=45)
+ax.grid(True, which='both', linestyle='--', linewidth=0.5, color='gray')
+plt.savefig(f'{output}/mgs_decomp_v1.png', bbox_inches='tight')
+plt.show()
 
-plt.xlabel('4-Year Period')
-plt.ylabel('Current 2023$/Gallon')
-plt.title('4-Year Period Averages for Components of the MGS')
-plt.xticks(index + bar_width * (len(vars_to_plot) / 2), collapsed_df['4_year_period'])
-
-plt.legend(title='MGS Components', bbox_to_anchor=(1.05, 1), loc='upper left')
-plt.tight_layout()
-plt.grid(True)
-plt.savefig(f'{output}/mgs_decomp.png')
+# now let's do the same plot, but super-imposing the costs/tax differences on the price difference
+vars_to_plot = ['excise tax difference', 'ca state.local tax cost', 'lcfs cost',
+                'ust fee', 'cax cost', 'carb cost premium']
+fig, ax = plt.subplots(figsize=(14, 7))
+bar_width = 0.35
+years = annual_df.index
+ax.bar(years, annual_df['price difference'], width=bar_width, color='blue', label='Price Difference')
+colors = ['#FF9999', '#66B3FF', '#99FF99', '#FFCC99', '#C2C2C2', '#FFB266']
+bottom = np.zeros(len(annual_df))
+for i, var in enumerate(vars_to_plot):
+    ax.bar(years, annual_df[var], bottom=bottom, 
+           width=bar_width, label=var, color=colors[i], alpha=0.5)
+    bottom += annual_df[var]  # Update bottom to stack the bars
+ax.plot(annual_df.index, annual_df['unexplained differential'], 
+        color='purple', linewidth=5, label='Unexplained Differential', marker='o')
+plt.axvline(x=2015, 
+            color='red', linewidth=2, linestyle='--', 
+            label='Torrance Refinery Fire, Feb. 18, 2015')
+ax.set_title('Superimposed Components on Price Difference with Unexplained Differential')
+ax.set_xlabel('Year')
+ax.set_ylabel('Value')
+ax.axhline(0, color='black', linewidth=2)
+ax.legend(loc='upper left', bbox_to_anchor=(1,1), ncol=1)
+plt.xticks(ticks=years, labels=years, rotation=45)
+ax.grid(True, which='both', linestyle='--', linewidth=0.5, color='gray')
+plt.savefig(f'{output}/mgs_decomp_v2.png', bbox_inches='tight')
 plt.show()
