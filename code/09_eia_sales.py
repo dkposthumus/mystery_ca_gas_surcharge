@@ -136,7 +136,7 @@ for area in strings:
         plt.title(f'{type} Stacked Graph, {area}')
         plt.xlabel('Date')
         plt.ylabel('Share of Gasoline Sold')
-        plt.legend(loc='upper left')
+        plt.legend(loc='upper left')      
         plt.grid(True)
         if type == 'Total Gasoline':
             plt.savefig(f'{output}/stacked_{area}.png')
