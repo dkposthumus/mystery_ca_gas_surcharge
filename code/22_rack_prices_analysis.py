@@ -10,6 +10,7 @@ data = (work_dir / 'data')
 raw_data = (data / 'raw')
 code = Path.cwd() 
 output = (work_dir / 'output')
+rack_analysis = (output / 'ca_city_rack_analyses')
 
 master_df = pd.read_csv(f'{data}/master.csv')
 master_df['date'] = pd.to_datetime(master_df['date'])
@@ -51,19 +52,11 @@ for city in cities:
     for var in ['rack-spot', 'retail-rack']:
         master_df[f'{city} {var} differential (real)'] = (master_df[f'{city} {var} differential (nominal)']
                                                           /master_df['price deflator'])
-plot_city_differentials(master_df, cities, 'rack-spot', 'nominal',
-                        'Rack-Spot Price Differential by City and Mystery Gas Surcharge (MGS)', 
-                        'Rack-Spot Price Differential (Current USD)', 
-                        f'{output}/rack_spot_differentials.png')
-plot_city_differentials(master_df, cities, 'retail-rack', 'nominal',
-                        'Retail-Rack Price Differential by City and Mystery Gas Surcharge (MGS)',
-                        'Retail-Rack Price Differential (Current USD)',
-                        f'{output}/retail_rack_differentials.png')
 plot_city_differentials(master_df, cities, 'rack-spot', 'real',
                         'Rack-Spot Price Differential by City and Mystery Gas Surcharge (MGS) (Real)', 
                         'Rack-Spot Price Differential (Current $)', 
-                        f'{output}/rack_spot_differentials.png')
+                        f'{rack_analysis}/rack_spot_differentials.png')
 plot_city_differentials(master_df, cities, 'retail-rack', 'real',
                         'Retail-Rack Price Differential by City and Mystery Gas Surcharge (MGS) (Real)',
                         'Retail-Rack Price Differential (Current $)',
-                        f'{output}/retail_rack_differentials.png')
+                        f'{rack_analysis}/retail_rack_differentials.png')

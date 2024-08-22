@@ -1,0 +1,62 @@
+\documentclass{article}
+\usepackage[portrait, margin=1in]{geometry}
+\usepackage{graphicx} 
+\graphicspath{{/Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses}}
+\usepackage{amsmath}
+\usepackage{hyperref}
+
+\begin{document}
+
+\title{Analysis of Rack Prices in California} 
+
+\maketitle
+
+\section{Tracing Chain of Prices}
+
+Generally, there are 4 `stages' of prices that we can trace out in gasoline markets: 
+\begin{enumerate} 
+	\item NYMEX Gasoline Futures
+		\subitem National-level
+	\item Spot Prices 
+		\subitem Spot Market-level. California has 2 spot markets: Los Angeles and San Francisco. Spot prices don't have to publicly reported, so data on San Francisco, the less significant spot market of the two, is sparse and not as reliable. Thus, for this analysis, I focus on Los Angeles spot prices. 
+	\item Rack prices 
+		\subitem These are located at distribution points between retail gasoline stations and spot markets. There are 12 rack fuel locations in CA, with varying degrees of importance. 
+	\item Retail gasoline prices
+		\subitem These vary gas-station-to-gas-station and are `composed' of all prices from earlier in the supply chain.
+\end{enumerate}
+
+\subsection{Spot-Gasoline Futures Differential}
+
+
+\subsection{Rack-Spot Differential}
+\includegraphics[width=7in]{rack_spot_differentials.png}
+
+\subsection{Retail-Rack Differential}
+\includegraphics[width=7in]{retail_rack_differentials.png}
+
+\section{Detailed City-by-City Analysis of Rack Prices}
+\includegraphics[width=7in]{san francisco_spread.png}
+
+\includegraphics[width=7in]{los angeles_spread.png}
+
+\includegraphics[width=7in]{san diego_spread.png}
+
+\includegraphics[width=7in]{sacramento_spread.png}
+
+\includegraphics[width=7in]{san jose_spread.png}
+
+\includegraphics[width=7in]{fresno_spread.png}
+
+\includegraphics[width=7in]{imperial_spread.png}
+
+\includegraphics[width=7in]{chico_spread.png}
+
+\includegraphics[width=7in]{stockton_spread.png}
+
+\includegraphics[width=7in]{colton_spread.png}
+
+\includegraphics[width=7in]{barstow_spread.png}
+
+\includegraphics[width=7in]{bakersfield_spread.png}
+
+\end{document}
