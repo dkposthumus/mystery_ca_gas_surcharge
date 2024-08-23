@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.7.31)  22 AUG 2024 17:14
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.7.31)  23 AUG 2024 11:12
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -395,213 +395,213 @@ Package hyperref Info: Link coloring OFF on input line 10.
 
 LaTeX Warning: No \author given.
 
+[1
+
+{/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/loc
+al/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}]
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/spot_diff
-erential.png, id=96, 722.7pt x 433.62pt>
+erential.png, id=113, 722.7pt x 433.62pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/spot
 _differential.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/spot_
 differential.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/spot_differential.png  used on input line 45.
+_rack_analyses/spot_differential.png  used on input line 54.
 (pdftex.def)             Requested size: 397.48499pt x 238.49173pt.
-[1
-
-{/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/loc
-al/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}]
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/rack_spot
-_differentials.png, id=114, 1011.78pt x 505.89pt>
+_differentials.png, id=116, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/rack
 _spot_differentials.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/rack_
 spot_differentials.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/rack_spot_differentials.png  used on input line 52.
+_rack_analyses/rack_spot_differentials.png  used on input line 61.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
 
 [2 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/spot_d
-ifferential.png> </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_a
-nalyses/rack_spot_differentials.png>]
+ifferential.png>]
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/retail_ra
-ck_differentials.png, id=126, 1011.78pt x 505.89pt>
+ck_differentials.png, id=128, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/reta
 il_rack_differentials.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/retai
 l_rack_differentials.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/retail_rack_differentials.png  used on input line 58.
+_rack_analyses/retail_rack_differentials.png  used on input line 67.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
- [3 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/retai
-l_rack_differentials.png>]
-Overfull \hbox (19.43625pt too wide) in paragraph at lines 80--108
+ [3 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/rack_
+spot_differentials.png> </Users/danpost/mystery_ca_gas_surcharge/output/ca_city
+_rack_analyses/retail_rack_differentials.png>]
+Overfull \hbox (19.43625pt too wide) in paragraph at lines 89--117
 [] 
  []
 
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/los angel
-es_spread.png, id=139, 1011.78pt x 505.89pt>
+es_spread.png, id=142, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/los 
 angeles_spread.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/los a
 ngeles_spread.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/los angeles_spread.png  used on input line 110.
+_rack_analyses/los angeles_spread.png  used on input line 119.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
 [4]
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/san diego
-_spread.png, id=145, 1011.78pt x 505.89pt>
+_spread.png, id=149, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/san 
 diego_spread.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/san d
 iego_spread.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/san diego_spread.png  used on input line 114.
+_rack_analyses/san diego_spread.png  used on input line 123.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/san jose_
-spread.png, id=146, 1011.78pt x 505.89pt>
+spread.png, id=150, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/san 
 jose_spread.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/san j
 ose_spread.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/san jose_spread.png  used on input line 118.
+_rack_analyses/san jose_spread.png  used on input line 127.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
  [5 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/los a
 ngeles_spread.png> </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack
 _analyses/san diego_spread.png>]
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/san franc
-isco_spread.png, id=153, 1011.78pt x 505.89pt>
+isco_spread.png, id=157, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/san 
 francisco_spread.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/san f
 rancisco_spread.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/san francisco_spread.png  used on input line 122.
+_rack_analyses/san francisco_spread.png  used on input line 131.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/fresno_sp
-read.png, id=154, 1011.78pt x 505.89pt>
+read.png, id=158, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/fres
 no_spread.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/fresn
 o_spread.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/fresno_spread.png  used on input line 126.
+_rack_analyses/fresno_spread.png  used on input line 135.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
  [6 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/san j
 ose_spread.png> </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_an
 alyses/san francisco_spread.png>]
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/sacrament
-o_spread.png, id=162, 1011.78pt x 505.89pt>
+o_spread.png, id=166, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/sacr
 amento_spread.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/sacra
 mento_spread.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/sacramento_spread.png  used on input line 130.
+_rack_analyses/sacramento_spread.png  used on input line 139.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/bakersfie
-ld_spread.png, id=163, 1011.78pt x 505.89pt>
+ld_spread.png, id=167, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/bake
 rsfield_spread.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/baker
 sfield_spread.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/bakersfield_spread.png  used on input line 134.
+_rack_analyses/bakersfield_spread.png  used on input line 143.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
  [7 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/fresn
 o_spread.png> </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_anal
 yses/sacramento_spread.png>]
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/stockton_
-spread.png, id=172, 1011.78pt x 505.89pt>
+spread.png, id=176, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/stoc
 kton_spread.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/stock
 ton_spread.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/stockton_spread.png  used on input line 138.
+_rack_analyses/stockton_spread.png  used on input line 147.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/chico_spr
-ead.png, id=173, 1011.78pt x 505.89pt>
+ead.png, id=177, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/chic
 o_spread.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/chico
 _spread.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/chico_spread.png  used on input line 142.
+_rack_analyses/chico_spread.png  used on input line 151.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
  [8 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/baker
 sfield_spread.png> </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack
 _analyses/stockton_spread.png>]
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/colton_sp
-read.png, id=181, 1011.78pt x 505.89pt>
+read.png, id=185, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/colt
 on_spread.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/colto
 n_spread.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/colton_spread.png  used on input line 146.
+_rack_analyses/colton_spread.png  used on input line 155.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/barstow_s
-pread.png, id=182, 1011.78pt x 505.89pt>
+pread.png, id=186, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/bars
 tow_spread.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/barst
 ow_spread.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/barstow_spread.png  used on input line 150.
+_rack_analyses/barstow_spread.png  used on input line 159.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
  [9 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/chico
 _spread.png> </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analy
 ses/colton_spread.png>]
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/imperial_
-spread.png, id=189, 1011.78pt x 505.89pt>
+spread.png, id=193, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/impe
 rial_spread.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/imper
 ial_spread.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/imperial_spread.png  used on input line 154.
+_rack_analyses/imperial_spread.png  used on input line 163.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
 
 [10 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/barst
 ow_spread.png> </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_ana
 lyses/imperial_spread.png>]
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/shell_spr
-ead.png, id=198, 1011.78pt x 505.89pt>
+ead.png, id=202, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/shel
 l_spread.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/shell
 _spread.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/shell_spread.png  used on input line 161.
+_rack_analyses/shell_spread.png  used on input line 170.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/valero_sp
-read.png, id=199, 1011.78pt x 505.89pt>
+read.png, id=203, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/vale
 ro_spread.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/valer
 o_spread.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/valero_spread.png  used on input line 165.
+_rack_analyses/valero_spread.png  used on input line 174.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/chevron_s
-pread.png, id=200, 1011.78pt x 505.89pt>
+pread.png, id=204, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/chev
 ron_spread.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/chevr
 on_spread.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/chevron_spread.png  used on input line 169.
+_rack_analyses/chevron_spread.png  used on input line 178.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
  [11 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/shel
 l_spread.png> </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_anal
 yses/valero_spread.png>]
 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/conocophi
-llips_spread.png, id=207, 1011.78pt x 505.89pt>
+llips_spread.png, id=211, 1011.78pt x 505.89pt>
 File: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/cono
 cophillips_spread.png Graphic file (type png)
 <use /Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/conoc
 ophillips_spread.png>
 Package pdftex.def Info: /Users/danpost/mystery_ca_gas_surcharge/output/ca_city
-_rack_analyses/conocophillips_spread.png  used on input line 173.
+_rack_analyses/conocophillips_spread.png  used on input line 182.
 (pdftex.def)             Requested size: 397.48499pt x 198.74751pt.
  [12 </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_analyses/chev
 ron_spread.png> </Users/danpost/mystery_ca_gas_surcharge/output/ca_city_rack_an
@@ -612,16 +612,16 @@ L3 programming layer <2024-02-20>
  ***********
 Package rerunfilecheck Info: File `ca_city_rack_analyses_memo.out' has not chan
 ged.
-(rerunfilecheck)             Checksum: 7009A950B660DC519BA251E29DC18740;3398.
+(rerunfilecheck)             Checksum: 33B4011703A385403C20839D938E6186;3477.
  ) 
 Here is how much of TeX's memory you used:
- 9871 strings out of 474116
- 162936 string characters out of 5743682
- 1942187 words of memory out of 5000000
- 32083 multiletter control sequences out of 15000+600000
+ 9873 strings out of 474116
+ 162956 string characters out of 5743682
+ 1946187 words of memory out of 5000000
+ 32084 multiletter control sequences out of 15000+600000
  564485 words of font info for 58 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,8n,79p,1095b,507s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,8n,79p,1095b,592s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 ></usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb>
 </usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></
@@ -633,10 +633,10 @@ texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/tex
 live/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texl
 ive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmti8.pfb></usr/local/texliv
 e/2024/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb>
-Output written on ca_city_rack_analyses_memo.pdf (12 pages, 3297439 bytes).
+Output written on ca_city_rack_analyses_memo.pdf (12 pages, 3298510 bytes).
 PDF statistics:
- 275 PDF objects out of 1000 (max. 8388607)
- 199 compressed objects within 2 object streams
- 46 named destinations out of 1000 (max. 500000)
- 280 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 280 PDF objects out of 1000 (max. 8388607)
+ 203 compressed objects within 3 object streams
+ 47 named destinations out of 1000 (max. 500000)
+ 288 words of extra memory for PDF output out of 10000 (max. 10000000)
 
