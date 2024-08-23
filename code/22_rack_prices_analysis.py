@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from itertools import cycle
 
-
 # let's create a set of locals referring to our directory and working directory 
 home_dir = Path.home()
 work_dir = (home_dir / 'mystery_ca_gas_surcharge')
