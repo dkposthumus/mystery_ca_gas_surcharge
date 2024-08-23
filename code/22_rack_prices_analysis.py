@@ -2,6 +2,8 @@ import pandas as pd
 from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
+from itertools import cycle
+
 
 # let's create a set of locals referring to our directory and working directory 
 home_dir = Path.home()
@@ -21,11 +23,13 @@ def plot_city_differentials(df, cities, type_differential, nominalreal, title, y
     for city in cities:
         differential_column = f'{city} {type_differential} differential ({nominalreal})'
         if differential_column in df.columns:
-            ax1.plot(df['date'], df[differential_column], label=city)
+            ax1.plot(df['date'], df[differential_column], label=city.title())
     ax1.set_xlabel('Date')
     ax1.set_ylabel(ylabel)
     ax1.axhline(y=0, color='black', linewidth=2.5) 
     ax1.grid(True)
+    plt.axvline(pd.to_datetime('2015-02-01'), color='red', 
+                linestyle='--', linewidth=2, label='Torrance Refinery Fire')
     #ax2 = ax1.twinx()
     #ax2.set_ylabel('Unexplained Differential (Nominal)', color='tab:red')
     ax1.plot(df['date'], df[f'unexplained differential ({nominalreal})'], color='black',

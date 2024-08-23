@@ -91,7 +91,12 @@ plt.plot(master_df.index, master_df['spot price differential (real)'],
 plt.plot(master_df.index, master_df['annual average spot price differential (real)'], 
          label='Annual Average Spot Price Differential (Real)', 
          color='black', linewidth=3)
-plt.title('LA Spot Price versus NY/Gulf Average Spot Price (in $2023), 2003-2024')
+plt.plot(master_df.index, master_df['unexplained differential (real)'],
+         label='Mystery Gas Surcharge (Real)')
+plt.plot(master_df.index, master_df['annual average unexplained differential (real)'],
+         label='Average Annual MGS (Real)',
+         color='red', linewidth=3)
+plt.title('LA Spot Price versus NY/Gulf Average Spot Price  and MGS (in $2023)')
 plt.xlabel('Date')
 plt.ylabel('Difference')
 plt.grid(True)
@@ -99,13 +104,12 @@ ax = plt.gca()
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
 ax.xaxis.set_major_locator(mdates.YearLocator(2))
 ax.set_xlim([start_date, end_date]) 
-
 plt.axvline(pd.to_datetime('2015-02-18'), color='red', linewidth=2, 
             linestyle='--', label='Torrance Refinery Fire, Feb. 18, 2015')
 plt.axhline(0, color='black', linewidth=1.5, linestyle='-', label='')
-
 plt.legend()
 plt.savefig(f'{output}/spot_differential.png')
+plt.savefig(f'{output}/ca_city_rack_analyses/spot_differential.png')
 plt.show()
 
 # now plot together the mystery gas surcharge and the spot price differential

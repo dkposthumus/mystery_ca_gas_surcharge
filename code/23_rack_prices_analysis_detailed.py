@@ -38,19 +38,28 @@ def city_var_time_series(city, var_to_plot):
                                                            'location of refiner', 'distributor', 
                                                            'Variable'])['Value']
                                         .transform(lambda x: x.rolling(window=122, min_periods=1).mean()))
-    for key, grp in city_df_long.groupby(['refiner', 'branded.unbranded', 
-                                          'location of refiner', 'distributor', 'Variable']):
+    color_cycle = plt.cm.get_cmap('tab20', len(city_df_long.groupby(['refiner', 
+                                                                     'branded.unbranded', 'location of refiner', 'distributor', 'Variable'])))
+    for i, (key, grp) in enumerate(city_df_long.groupby(['refiner', 'branded.unbranded', 
+                                          'location of refiner', 'distributor', 'Variable'])):
         refiner, branded_unbranded, loc_refiner, distributor, var = key
         if refiner != '.' or branded_unbranded != '.' or loc_refiner != '.' or distributor != '.':
             if refiner == '.' and branded_unbranded != '.':
                 label = f"{branded_unbranded} (total)"
-                plt.plot(grp['date'], grp['4_month_moving_avg'], linewidth=4, label=label)
+                if branded_unbranded == 'branded':
+                    plt.plot(grp['date'], grp['4_month_moving_avg'], linewidth=4, label=label, 
+                         color='green')
+                if branded_unbranded == 'unbranded':
+                    plt.plot(grp['date'], grp['4_month_moving_avg'], linewidth=4, label=label, 
+                         color='blue')
             else:
                 label = f"{refiner}, {branded_unbranded}, {loc_refiner}, {distributor}"
-                plt.plot(grp['date'], grp['4_month_moving_avg'], label=label)
+                plt.plot(grp['date'], grp['4_month_moving_avg'], label=label, color=color_cycle(i))
     plt.axvline(pd.to_datetime('2015-02-01'), color='red', 
                 linestyle='--', linewidth=2, label='Torrance Refinery Fire')
-    plt.title(f'Rack Price Spreads (Real) for {city.title()}')
+    plt.axhline(y=0, color='black', linestyle='-', linewidth=2.5)
+    plt.ylim(-0.6, 0.6)
+    plt.title(f'Rack Price Spreads (Real) for {city.title()}, 4-Month Moving Average')
     plt.xlabel('Date')
     plt.ylabel('March 2023 $/Gallon')
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -61,3 +70,49 @@ def city_var_time_series(city, var_to_plot):
 
 for city in rack_detailed_df['rack fuel location'].unique(): 
     city_var_time_series(city, 'spread (real)')
+
+def refiner_var_time_series(refiner, var_to_plot):
+    # Filter the DataFrame for the specified city
+    refiner_df = rack_detailed_df[rack_detailed_df['refiner'] == refiner]
+    refiner_df = refiner_df[refiner_df['branded.unbranded'] == 'branded']
+    cities_of_interest = ['los angeles', 'san francisco', 'san diego', 'san jose', 'bakersfield']
+    refiner_df = refiner_df[refiner_df['rack fuel location'].isin(cities_of_interest)]
+    # Keep only the relevant columns
+    cols_keep = ['date', 'rack fuel location', 'location of refiner', 
+                 'distributor', var_to_plot]
+    refiner_df = refiner_df[cols_keep]
+    refiner_df = refiner_df.fillna({'rack fuel location': '.', 
+                              'location of refiner': '.', 'distributor': '.'})
+    refiner_df_long = pd.melt(refiner_df, 
+                           id_vars=['date', 'location of refiner', 'distributor', 'rack fuel location'],
+                           value_vars=var_to_plot,
+                           var_name='Variable',
+                           value_name='Value')
+    plt.figure(figsize=(14, 7))
+    refiner_df_long = refiner_df_long.sort_values(by='date')
+    refiner_df_long['4_month_moving_avg'] = (refiner_df_long.groupby(['rack fuel location', 
+                                                        'location of refiner', 'distributor', 
+                                                        'Variable'])['Value']
+                                        .transform(lambda x: x.rolling(window=122, min_periods=1).mean()))
+    color_cycle = plt.cm.get_cmap('tab20', len(refiner_df_long.groupby(['rack fuel location', 
+                                    'location of refiner', 'distributor', 'Variable'])))
+    for i, (key, grp) in enumerate(refiner_df_long.groupby(['rack fuel location', 
+                                          'location of refiner', 'distributor', 'Variable'])):
+        city, loc_refiner, distributor, var = key
+        if city != '.' or loc_refiner != '.' or distributor != '.':
+            label = f'{city}, {loc_refiner}, {distributor}'
+            plt.plot(grp['date'], grp['4_month_moving_avg'], label=label, color=color_cycle(i))
+    plt.axvline(pd.to_datetime('2015-02-01'), color='red', 
+                linestyle='--', linewidth=2, label='Torrance Refinery Fire')
+    plt.axhline(y=0, color='black', linestyle='-', linewidth=2.5)
+    plt.title(f'Rack Price Spreads (Real) for {refiner.title()}, 4-Month Moving Average')
+    plt.xlabel('Date')
+    plt.ylabel('March 2023 $/Gallon')
+    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(f'{rack_analysis}/{refiner}_spread.png')
+    plt.show()
+for refiner in ['chevron', 'conocophillips', 'valero', 'shell']: 
+    print(refiner)
+    refiner_var_time_series(refiner, 'spread (real)')
