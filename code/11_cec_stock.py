@@ -65,8 +65,9 @@ def plot_time_series(df, value_col, title, ylabel):
     plt.show()
 
 # make a days supplied variable, which is just stocks divided by throughput
+    # multiply by 7 so that this is in terms of days, not weeks
 cec_stock_total_ca_df['Days Supplied'] = (cec_stock_total_ca_df['Stocks'] 
-                                        / cec_stock_total_ca_df['Throughput'])
+                                        / cec_stock_total_ca_df['Throughput']) * 7
 
 for var, lab in zip(['Stocks', 'Throughput', 'Days Supplied'], ['Stocks, 000s of Barrels', 
                                                                 'Throughput, 000s of Barrels', 
@@ -98,5 +99,5 @@ average_stocks_2015_2019 = df_2015_2019['Stocks'].mean()
 # Calculate the percentage of the average
 percent_of_average = (aug_4_2023_stocks / average_stocks_2015_2019) * 100
 # Calculate days of supply for August 1, 2023
-aug_4_2023_days_supplied = (aug_4_2023_stocks / aug_4_2023_throughput)
+aug_4_2023_days_supplied = (aug_4_2023_stocks / aug_4_2023_throughput) * 7
 percentile, percent_of_average, aug_4_2023_days_supplied
