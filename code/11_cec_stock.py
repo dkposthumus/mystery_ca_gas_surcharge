@@ -39,7 +39,7 @@ cec_stock_total_ca_df = cec_stock_df.groupby(['Date', 'Product Type', 'Product C
 cec_stock_total_ca_df.drop(columns=['Region', 'Product Category', 'Throughput Type'], inplace=True)
 
 # before finding numbers let's plot the time-series to get a sense of what we're working with
-def plot_time_series(df, value_col, title, ylabel):
+def plot_time_series(df, value_col, title, ylabel, _5yr_plot, save):
     plt.figure(figsize=(10, 6))
     plt.plot(df['Date'], df[value_col], color='blue', linestyle='-', 
              label = f'{value_col}, Raw', linewidth=0.25)
@@ -54,6 +54,10 @@ def plot_time_series(df, value_col, title, ylabel):
     plt.axvline(pd.to_datetime('2015-02-20'), color='red', linestyle='--', 
                linewidth=2, label='Torrance Refinery Fire (February 20, 2015)')
 
+    if _5yr_plot == True:
+        plt.fill_between(df['Date'], df['5yr_min'], df['5yr_max'], color='gray', 
+                        alpha=0.5, label='5-yr Range')
+
     plt.title(title)
     plt.xlabel('Date')
     plt.ylabel(ylabel)
@@ -61,7 +65,8 @@ def plot_time_series(df, value_col, title, ylabel):
     plt.xticks(rotation=45) 
     plt.tight_layout()
     plt.legend()
-    plt.savefig(f'{output}/cec_{value_col.lower()}.png')
+    if save == True:
+        plt.savefig(f'{output}/cec_{value_col.lower()}.png')
     plt.show()
 
 # make a days supplied variable, which is just stocks divided by throughput
@@ -73,7 +78,8 @@ for var, lab in zip(['Stocks', 'Throughput', 'Days Supplied'], ['Stocks, 000s of
                                                                 'Throughput, 000s of Barrels', 
                                                                 'Days Supplied']):
     plot_time_series(cec_stock_total_ca_df, var, 
-                     f'{var} Over Time -- California Total, CARB Reformulated Gasoline', lab)
+                     f'{var} Over Time -- California Total, CARB Reformulated Gasoline', lab,
+                     _5yr_plot=False, save=True)
 
 # first we need to pinpoint whether we have data for Aug 1, 2023
 filtered_df = (cec_stock_total_ca_df[(cec_stock_total_ca_df['month'] == 8) 
@@ -101,3 +107,64 @@ percent_of_average = (aug_4_2023_stocks / average_stocks_2015_2019) * 100
 # Calculate days of supply for August 1, 2023
 aug_4_2023_days_supplied = (aug_4_2023_stocks / aug_4_2023_throughput) * 7
 percentile, percent_of_average, aug_4_2023_days_supplied
+
+# Calculate 5-year rolling minimum and maximum for 'Stock'
+cec_stock_total_ca_df['week'] = cec_stock_total_ca_df['Date'].dt.isocalendar().week
+
+# Create empty columns for 5yr_min and 5yr_max
+cec_stock_total_ca_df['5yr_min'] = None
+cec_stock_total_ca_df['5yr_max'] = None
+for idx, row in cec_stock_total_ca_df.iterrows():
+    current_year = row['year']
+    current_week = row['week']
+    
+    # Filter the data for the same week in the past 5 years
+    last_5_years = (cec_stock_total_ca_df[(cec_stock_total_ca_df['week'] == current_week) 
+                                        & (cec_stock_total_ca_df['year'] < current_year) 
+                                        & (cec_stock_total_ca_df['year'] >= current_year - 5)])
+    
+    # Calculate the 5-year min and max for that specific week
+    if not last_5_years.empty:
+        cec_stock_total_ca_df.at[idx, '5yr_min'] = last_5_years['Stocks'].min()
+        cec_stock_total_ca_df.at[idx, '5yr_max'] = last_5_years['Stocks'].max()
+
+# Convert the min/max columns to numeric
+cec_stock_total_ca_df['5yr_min'] = pd.to_numeric(cec_stock_total_ca_df['5yr_min'], errors='coerce')
+cec_stock_total_ca_df['5yr_max'] = pd.to_numeric(cec_stock_total_ca_df['5yr_max'], errors='coerce')
+
+plot_time_series(cec_stock_total_ca_df, 'Stocks', 
+                 'Stock Over Time -- California Total, CARB Reformulated Gasoline', 
+                 'Stocks, 000s of Barrels', _5yr_plot=True, save=False)
+
+# filter dataset to include only 2021-2024
+shortened_cec_df = (cec_stock_total_ca_df.loc[(cec_stock_total_ca_df['Date'] >= '2021-01-01') 
+                        & (cec_stock_total_ca_df['Date'] <= '2024-08-31')])
+def plot_shortened_time_series(df, value_col, title, ylabel, _5yr_plot, save):
+    plt.figure(figsize=(10, 6))
+    plt.plot(df['Date'], df[value_col], color='blue', linestyle='-', 
+             label = f'{value_col}, Raw', linewidth=1.5)
+
+    plt.axvline(pd.to_datetime('2023-08-04'), color='red', linestyle='--', 
+                linewidth=2, label='August 04, 2023')
+    plt.axvline(pd.to_datetime('2022-08-05'), color='red', linestyle='--', 
+                linewidth=2, label='August 05, 2022')
+    plt.axvline(pd.to_datetime('2021-08-06'), color='red', linestyle='--', 
+                linewidth=2, label='August 06, 2023')
+    if _5yr_plot == True:
+        plt.fill_between(df['Date'], df['5yr_min'], df['5yr_max'], color='gray', 
+                        alpha=0.5, label='5-yr Range')
+
+    plt.title(title)
+    plt.xlabel('Date')
+    plt.ylabel(ylabel)
+    plt.grid(True)
+    plt.xticks(rotation=45) 
+    plt.tight_layout()
+    plt.legend()
+    if save == True:
+        plt.savefig(f'{output}/cec_{value_col.lower()}_5y_range.png')
+    plt.show()
+
+plot_shortened_time_series(shortened_cec_df, 'Stocks', 
+                 'Stock Over Time -- California Total, CARB Reformulated Gasoline', 
+                 'Stocks, 000s of Barrels', _5yr_plot=True, save=True)
