@@ -66,7 +66,8 @@ plt.show()
 # now let's make the same plot, but for CA's margin
 plt.figure(figsize=(10, 6))
 plt.plot(master_df.index, master_df['ca margin (real)'], label='CA Margin (Real)')
-plt.plot(master_df.index, master_df['annual average ca margin (real)'], label='Annual Average CA Margin (Real)', color='black', linewidth=3)
+plt.plot(master_df.index, master_df['annual average ca margin (real)'], 
+         label='Annual Average CA Margin (Real)', color='black', linewidth=3)
 plt.title('California Margin (in $2023), 2000-2024')
 plt.xlabel('Date')
 plt.ylabel('Margin')
@@ -220,3 +221,4 @@ plt.axhline(0, color='black', linewidth=1.5, linestyle='-', label='')
 plt.legend()
 plt.savefig(f'{output}/ca_natl_fees_taxes.png')
 plt.show()
+

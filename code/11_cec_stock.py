@@ -3,6 +3,8 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import percentileofscore
+import requests
+import json
 # let's create a set of locals referring to our directory and working directory 
 home_dir = Path.home()
 work_dir = (home_dir / 'mystery_ca_gas_surcharge')
@@ -168,3 +170,99 @@ def plot_shortened_time_series(df, value_col, title, ylabel, _5yr_plot, save):
 plot_shortened_time_series(shortened_cec_df, 'Stocks', 
                  'Stock Over Time -- California Total, CARB Reformulated Gasoline', 
                  'Stocks, 000s of Barrels', _5yr_plot=True, save=True)
+
+api_url = 'https://api.eia.gov/v2/petroleum/stoc/st/data'
+params = {'api_key': 'QyPbWQo92CjndZz8conFD9wb08rBkP4jnDV02TAd'}
+header = {
+    "frequency": "monthly",
+    "data": ["value"],
+    "facets": {"duoarea": ["R50", "SCA"],
+    "product": ["EPOBG"]},
+    "start": "1982-08-20",
+    "end": "2024-09-06",
+    "sort": [{"column": "period", "direction": "desc"}],
+    "offset": 0,
+    "length": 5000
+}
+padd5_stocks = requests.get(
+    api_url, params=params, headers={'X-Params': json.dumps(header)}
+)
+if padd5_stocks.status_code == 200:
+    padd5_stocks_data = padd5_stocks.json()
+    padd5_stocks_series = padd5_stocks_data['response']['data']
+    padd5_stocks_values = []
+    for data_point in padd5_stocks_series:
+        date = data_point['period']
+        stock = data_point['value']
+        state = data_point['duoarea']
+        padd5_stocks_values.append(
+            {
+                'Date': date,
+                'padd5 monthly stock': stock,
+                'state': state
+            }
+        )
+    # Create Pandas DataFrame
+    padd5_stocks_df = pd.DataFrame(padd5_stocks_values)
+    # Display DataFrame
+    print(padd5_stocks_df)
+else:
+    print(f'Failed to retrieve data. Status code: {padd5_stocks.status_code}')
+
+api_url = 'https://api.eia.gov/v2/petroleum/cons/psup/data'
+params = {'api_key': 'QyPbWQo92CjndZz8conFD9wb08rBkP4jnDV02TAd'}
+header = {"frequency": "monthly",
+    "data": ["value"],
+    "facets": {"duoarea": ["R50"],
+        "product": ["EPM0C"],
+        "series": ["MG4UP_R50_1"]},
+    "start": "1936-01",
+    "end": "2024-06",
+    "sort": [{"column": "period", "direction": "desc"}],
+    "offset": 0,
+    "length": 5000}
+padd5_product_supplied = requests.get(
+    api_url, params=params, headers={'X-Params': json.dumps(header)}
+)
+if padd5_stocks.status_code == 200:
+    padd5_product_supplied_data = padd5_product_supplied.json()
+    padd5_product_supplied_series = padd5_product_supplied_data['response']['data']
+    padd5_product_supplied_values = []
+    for data_point in padd5_product_supplied_series:
+        date = data_point['period']
+        stock = data_point['value']
+        padd5_product_supplied_values.append(
+            {
+                'Date': date,
+                'padd5 monthly product supplied': stock,
+            }
+        )
+    # Create Pandas DataFrame
+    padd5_product_supplied_df = pd.DataFrame(padd5_product_supplied_values)
+    # Display DataFrame
+    print(padd5_product_supplied_df)
+else:
+    print(f'Failed to retrieve data. Status code: {padd5_product_supplied.status_code}')
+# now merge everything together 
+for df in [padd5_stocks_df, padd5_product_supplied_df]:
+    for var in df.columns:
+        df[var] = pd.to_numeric(df[var], errors='ignore')
+    df['Date'] = pd.to_datetime(df['Date'])
+
+padd5_product_supplied_df['padd5 monthly product supplied'] = (
+    padd5_product_supplied_df['padd5 monthly product supplied'])
+'''
+padd5_stocks_df['year'] = padd5_stocks_df['Date'].dt.year
+padd5_stocks_df['month'] = padd5_stocks_df['Date'].dt.month
+padd5_stocks_df['day'] = 1
+padd5_stocks_df = padd5_stocks_df.groupby(['year', 'month']).mean().reset_index()
+padd5_stocks_df['Date'] = pd.to_datetime(padd5_stocks_df[['year', 'month', 'day']])
+'''
+master_df = pd.merge(padd5_stocks_df, padd5_product_supplied_df, on=['Date'], 
+                     how='outer')
+
+master_df['days of supply'] = (master_df['padd5 monthly stock'] 
+                               / master_df['padd5 monthly product supplied'])
+plot_time_series(master_df, 'days of supply',
+                    'Days of Supply Over Time -- PADD 5, Conventional Motor Gasoline', 
+                    'Days of Supply', _5yr_plot=False, save=True)

@@ -2,6 +2,8 @@ import requests
 import pandas as pd
 import json
 from pathlib import Path
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 # let's create a set of locals referring to our directory and working directory 
 home_dir = Path.home()
 work_dir = (home_dir / 'mystery_ca_gas_surcharge')
@@ -17,7 +19,7 @@ code = Path.cwd()
 api_url = 'https://api.eia.gov/v2/petroleum/pri/gnd/data'
 params = {'api_key': 'QyPbWQo92CjndZz8conFD9wb08rBkP4jnDV02TAd'}
 header = {
-    'frequency': 'monthly',
+    'frequency': 'weekly',
     'data': ['value'],
     'facets': {'series': ['EMM_EPM0_PTE_NUS_DPG', 'EMM_EPM0_PTE_SCA_DPG']},
     'start': '2000-01',
@@ -65,18 +67,38 @@ for col in columns_to_convert:
     gas_retail_df[col] = gas_retail_df[col].astype(float)
 print(gas_retail_df.dtypes)
 # finally, let's rename to make clear that these are NOMINAL
-gas_retail_df = gas_retail_df.rename(
+gas_retail_df.rename(
     columns={
         'CALIFORNIA': 'california gas (retail) (nominal)',
         'U.S.': 'national gas (retail) (nominal)',
-        'US excl. CA': 'national excluding CA gas (retail) (nominal)',
-    }
+        'US excl. CA': 'national retail excl. ca (nominal)',
+    }, inplace=True
 )
 # let's make each the date variable datetime format
-gas_retail_df['date'] = pd.to_datetime(gas_retail_df['date'])
-# now let's set the date variable as the index
-gas_retail_df.set_index('date')
-print(gas_retail_df)
-print(gas_retail_df.columns)
+gas_retail_df.index = pd.to_datetime(gas_retail_df['date'])
+
+filtered_df = gas_retail_df[(gas_retail_df.index >= '2015-01-01') & (gas_retail_df.index <= '2024-08-01')]
+plt.figure(figsize=(10, 6))
+plt.plot(filtered_df.index, filtered_df['california gas (retail) (nominal)'], 
+         label='CA Retail Price',
+         color='blue')
+plt.plot(filtered_df.index, filtered_df['national gas (retail) (nominal)'], 
+         label='USA Retail Price',
+         color='orange')
+plt.title('CA vs. Rest of Country Gas Retail Prices (in $2023), 2000-2024')
+plt.xlabel('Date')
+plt.ylabel('Retail Gasoline Price')
+plt.grid(True)
+ax = plt.gca()
+ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+ax.xaxis.set_major_locator(mdates.YearLocator(2))
+
+plt.axvline(pd.to_datetime('2023-09-01'), color='red', linewidth=2,
+            label='September 2023')
+plt.axhline(0, color='black', linewidth=1.5, linestyle='-', label='')
+
+plt.legend()
+plt.show()
+
 # finally let's save as a csv
 gas_retail_df.to_csv(f'{data}/gas_retail.csv', index=False)
