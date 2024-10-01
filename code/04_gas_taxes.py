@@ -173,10 +173,10 @@ ca_sales_tax = {
         '01/01/2009',
         '07/01/2010',
     ],
-    'ca state.local tax rate': [
+    'ca state gas sales tax rate': [
+        0.0625,
         0.0725,
-        0.0825,
-        0.0325,
+        0.0225,
     ]
 }
 ca_sales_tax_df = pd.DataFrame(ca_sales_tax)
@@ -190,7 +190,7 @@ gas_tax_final_df = pd.merge(gas_tax_final_df, ca_sales_tax_df, on='date', how='o
 # now keep only those observations starting with january 01, 2000
 gas_tax_final_df = gas_tax_final_df[gas_tax_final_df['date'] >= '2000-01-01']
 # now forward fill the ca tax variable
-for var in ['ca state gas tax', 'ca state.local tax rate']:
+for var in ['ca state gas tax', 'ca state gas sales tax rate']:
     gas_tax_final_df[var] = gas_tax_final_df[var].fillna(method='ffill')
 
 gas_tax_final_df.to_csv(f'{data}/gas_taxes.csv', index=False)

@@ -26,6 +26,10 @@ ust_df = pd.read_csv(f'{data}/ust.csv')
 cax_df = pd.read_csv(f'{data}/cax.csv')
 # rack prices
 rack_df = pd.read_csv(f'{data}/rack_prices.csv')
+# special district tax 
+special_district_tax_df = pd.read_excel(f'{raw_data}/special_district_sales_tax.xlsx', header = 1)
+special_district_tax_df['date'] = pd.to_datetime(special_district_tax_df['MonthYear'])
+special_district_tax_df.drop(columns={'MonthYear'}, inplace=True)
 # let's merge on date for each of the 4 datasets of interest:
 master_df = pd.merge(cpi, gas_retail_df, on='date', how='outer')
 master_df = pd.merge(master_df, spot_prices_df, on='date', how='outer')
@@ -34,12 +38,20 @@ master_df = pd.merge(master_df, lcfs_df, on='date',how='outer')
 master_df = pd.merge(master_df, ust_df, on='date',how='outer')
 master_df = pd.merge(master_df, cax_df, on='date',how='outer')
 master_df = pd.merge(master_df, rack_df, on='date',how='outer')
+
+master_df['date'] = pd.to_datetime(master_df['date'])
+
+master_df = pd.merge(master_df, special_district_tax_df, on='date', how='outer')
 # now i need to forward fill some variables since they're currently only non-missing for the first day of its duration
-for ffill_var in ['ust fee', 'cax cost']:
+for ffill_var in ['ust fee', 'cax cost', 'all-urban cpi', 'special district sales tax', 
+            'california gas (retail) (nominal)', 'national gas (retail) (nominal)', 
+            'la spot price (nominal)',
+            'ny spot price (nominal)', 'gulf spot price (nominal)', 'uk brent (nominal)',
+            'ca state gas sales tax rate', 'ca state gas tax','ca total gas sold', 
+            'ca share of usa gas', 'average state tax excl. ca', 'lcfs credit price', 'lcfs cost']:
     master_df[ffill_var] = master_df[ffill_var].fillna(
     method='ffill'
 )
-master_df['date'] = pd.to_datetime(master_df['date'])
 # Set 'Date' as index
 master_df.set_index('date', inplace=True)
 # make sure that date variable is datetime
@@ -76,6 +88,7 @@ fixed_cpi = master_df.loc[cpi_anchor, 'all-urban cpi']
 master_df['price deflator'] = master_df['all-urban cpi'] / fixed_cpi
 
 # now multiply by california's nominal retail gas price to find the cost per gallon, INCLUSIVE of the gas tax
+master_df['ca state.local tax rate'] = master_df['ca state gas sales tax rate'] + master_df['special district sales tax']
 master_df['ca state.local tax cost'] = (master_df['ca state.local tax rate']/(master_df['ca state.local tax rate']+1))*master_df['california gas (retail) (nominal)']
 
 # now i want to create a total taxes and fees variable for california
