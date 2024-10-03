@@ -1,5 +1,6 @@
 import pandas as pd
 from pathlib import Path
+import numpy as np
 # let's create a set of locals referring to our directory and working directory 
 home_dir = Path.home()
 work_dir = (home_dir / 'mystery_ca_gas_surcharge')
@@ -65,16 +66,16 @@ for df, city, code in zip(dfs,
                       'RACKE0G']):
     df['date'] = pd.to_datetime(df['date'])
     # this is the overall index, capturing the totality of rack prices for {city}
-    df.rename(columns={f'{code} PO6 R Index': f'index (nominal), , , , , {city}'}, inplace=True)
+    df.rename(columns={f'{code} PO6 R Index': f'gross price (nominal), , , , , {city}'}, inplace=True)
     # i want to calculate the spread for a variety of variables, the list of which EXCLUDES 
     # the overall rack price and date. I am dropping the suffix 'index' from the variable names to keep clean variable names
     vars_to_calc_spread_for = list(set(
-        [col.replace(' Index', '') for col in df.columns if col not in ['date', f'index (nominal), , , , , {city}']]
+        [col.replace(' Index', '') for col in df.columns if col not in ['date', f'gross price (nominal), , , , , {city}']]
     ))
     for var in vars_to_calc_spread_for:
-        df[f'{var} spread (nominal)'] = (df[f'{var} Index'] - df[f'index (nominal), , , , , {city}'])
-        df.rename(columns={f'{var} Index': f'{var} index (nominal)'}, inplace=True)
-    for spec in ['spread (nominal)', 'index (nominal)']:
+        df[f'{var} gross spread (nominal)'] = (df[f'{var} Index'] - df[f'gross price (nominal), , , , , {city}'])
+        df.rename(columns={f'{var} Index': f'{var} gross price (nominal)'}, inplace=True)
+    for spec in ['gross spread (nominal)', 'gross price (nominal)']:
         df.rename(columns = {f'{code} PO6 U {spec}': f'{spec}, , unbranded, , , {city}',
                          f'{code} PO6 B {spec}': f'{spec}, , branded, , , {city}'}, inplace=True)
 # now unfortunately we have to rename manually the rest of the columns
@@ -88,19 +89,19 @@ def reshape_wide_to_long(df):
     df_long = pd.melt(df, id_vars=['date'], var_name='variable', value_name='value')
     variable_parts = df_long['variable'].str.split(', ', expand=True)
     df_long['spec'] = variable_parts[0]
-    df_long['refiner'] = variable_parts[1]
-    df_long['branded.unbranded'] = variable_parts[2]
+    df_long['company'] = variable_parts[1]
+    df_long['branded_indicator'] = variable_parts[2]
     df_long['location of refiner'] = variable_parts[3]
     df_long['distributor'] = variable_parts[4]
-    df_long['rack fuel location'] = variable_parts[5]
-    df_wide = df_long.pivot_table(index=['date', 'refiner', 'branded.unbranded', 
+    df_long['rack_city'] = variable_parts[5]
+    df_wide = df_long.pivot_table(index=['date', 'company', 'branded_indicator', 
                                          'location of refiner', 'distributor', 
-                                         'rack fuel location'], 
+                                         'rack_city'], 
                                   columns='spec', 
                                   values='value').reset_index()
     return df_wide
 
-for spec in ['spread (nominal)', 'index (nominal)']:
+for spec in ['gross spread (nominal)', 'gross price (nominal)']:
     bakersfield_df.rename(columns = {
         f'RACKE0G PO6 S26 T1 {spec}': f'{spec}, texaco, branded, , kern, bakersfield', 
         f'RACKE0G PO6 SA3 T1 {spec}': f'{spec}, chevron, branded, , kern, bakersfield', 
@@ -136,7 +137,7 @@ for spec in ['spread (nominal)', 'index (nominal)']:
         f'RACKK0G PO6 S43 T1 {spec}': f'{spec}, bp products, unbranded, , kinder morgan, fresno', 
         f'RACKK0G PO6 S7H T1 {spec}': f'{spec}, flyers energy, , , kinder morgan, fresno', 
         f'RACKK0G PO6 S7I T1 {spec}': f'{spec}, tesoro exxon, , , kinder morgan, fresno', 
-        f'RACKK0G PO6 SA3 T1 {spec}': f'{spec}, chevron branded, kinder morgan, fresno', 
+        f'RACKK0G PO6 SA3 T1 {spec}': f'{spec}, chevron, branded, kinder morgan, fresno', 
         f'RACKK0G PO6 SIA T1 {spec}': f'{spec}, conocophillips, branded, , kinder morgan, fresno', 
         f'RACKK0G PO6 SJA T1 {spec}': f'{spec}, conocophillips, unbranded, , kinder morgan, fresno', 
         f'RACKK0G PO6 SK8 T1 {spec}': f'{spec}, valero, branded, , kinder morgan, fresno', 
@@ -234,7 +235,7 @@ for spec in ['spread (nominal)', 'index (nominal)']:
         f'RACKP0G PO6 SL6 T4 {spec}': f'{spec}, valero, unbranded, benicia, valero refining, san francisco', 
         f'RACKP0G PO6 SO4 T9 {spec}': f'{spec}, marathon, unbranded, martinez, tesoro, san francisco', 
         f'RACKP0G PO6 SP4 T9 {spec}': f'{spec}, marathon, branded, martinez, tesoro, san francisco', 
-        f'RACKP0G PO6 SR5 T6 {spec}': f'{spec}, shell branded, , martinez, shell oil products, san francisco', 
+        f'RACKP0G PO6 SR5 T6 {spec}': f'{spec}, shell, branded, , martinez, shell oil products, san francisco', 
         f'RACKP0G PO6 SSG T6 {spec}': f'{spec}, toledo refining, , martinez, shell oil products, san francisco', 
     }, inplace=True)
     san_jose_df.rename(columns={
@@ -294,7 +295,6 @@ detailed_rack_df = pd.concat(dfs, ignore_index=True)
 cpi_df = pd.read_csv(f'{data}/cpi.csv')
 cpi_df['date'] = pd.to_datetime(cpi_df['date'])
 
-
 detailed_rack_df = pd.merge(detailed_rack_df, cpi_df, on='date', how='outer')
 detailed_rack_df['all-urban cpi'] = detailed_rack_df['all-urban cpi'].fillna(method='ffill')
 
@@ -302,7 +302,7 @@ cpi_anchor = pd.to_datetime('2023-03-01')
 fixed_cpi = detailed_rack_df.loc[detailed_rack_df['date'] == cpi_anchor, 'all-urban cpi'].values[0]
 detailed_rack_df['price deflator'] = detailed_rack_df['all-urban cpi'] / fixed_cpi
 
-for spec in ['spread', 'index']:
+for spec in ['gross spread', 'gross price']:
     detailed_rack_df[f'{spec} (real)'] = (detailed_rack_df[f'{spec} (nominal)']
                                           /detailed_rack_df['price deflator'])
 
@@ -310,6 +310,20 @@ detailed_rack_df['date'] = pd.to_datetime(detailed_rack_df['date'])
 start_date = pd.to_datetime('2010-01-01')
 detailed_rack_df = detailed_rack_df.loc[detailed_rack_df['date'] >= start_date]
 
-detailed_rack_df.dropna(subset=['rack fuel location'], inplace=True)
+#detailed_rack_df.dropna(subset=['rack_city'], inplace=True)
+
+# now let's rename some blank columns to make it clear that they're overall indices: 
+def assign_index_names(row):
+    if row['company'] == '' and row['location of refiner'] == '' and row['distributor'] == '':
+        if row['branded_indicator'] == '':
+            return 'BBG average'
+        elif row['branded_indicator'] == 'unbranded':
+            return 'unbranded average'
+        elif row['branded_indicator'] == 'branded':
+            return 'branded average'
+    return row['company']  # Return the original company value if no conditions are met
+
+# Apply the function to each row in the DataFrame
+detailed_rack_df['company'] = detailed_rack_df.apply(assign_index_names, axis=1)
 
 detailed_rack_df.to_csv(f'{data}/detailed_rack_prices.csv', index=False)

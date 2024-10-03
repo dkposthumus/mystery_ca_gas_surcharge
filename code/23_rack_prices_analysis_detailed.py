@@ -18,42 +18,43 @@ rack_detailed_df['date'] = pd.to_datetime(rack_detailed_df['date'], format='mixe
 
 def city_var_time_series(city, var_to_plot):
     # Filter the DataFrame for the specified city
-    city_df = rack_detailed_df[rack_detailed_df['rack fuel location'] == city]
+    city_df = rack_detailed_df[rack_detailed_df['rack_city'] == city]
     
     # Keep only the relevant columns
-    cols_keep = ['date', 'refiner', 'branded.unbranded', 'location of refiner', 
+    cols_keep = ['date', 'company', 'branded_indicator', 'location of refiner', 
                  'distributor', var_to_plot]
     city_df = city_df[cols_keep]
-    city_df = city_df.fillna({'refiner': '.', 'branded.unbranded': '.', 
+    city_df = city_df.fillna({'company': '.', 'branded_indicator': '.', 
                               'location of refiner': '.', 'distributor': '.'})
     city_df_long = pd.melt(city_df, 
-                           id_vars=['date', 'refiner', 'branded.unbranded', 
+                           id_vars=['date', 'company', 'branded_indicator', 
                                     'location of refiner', 'distributor'],
                            value_vars=var_to_plot,
                            var_name='Variable',
                            value_name='Value')
     plt.figure(figsize=(14, 7))
     city_df_long = city_df_long.sort_values(by='date')
-    city_df_long['4_month_moving_avg'] = (city_df_long.groupby(['refiner', 'branded.unbranded', 
+    city_df_long['4_month_moving_avg'] = (city_df_long.groupby(['company', 'branded_indicator', 
                                                            'location of refiner', 'distributor', 
                                                            'Variable'])['Value']
                                         .transform(lambda x: x.rolling(window=122, min_periods=1).mean()))
     color_cycle = plt.cm.get_cmap('tab20', len(city_df_long.groupby(['refiner', 
-                                                                     'branded.unbranded', 'location of refiner', 'distributor', 'Variable'])))
-    for i, (key, grp) in enumerate(city_df_long.groupby(['refiner', 'branded.unbranded', 
+                                            'branded_indicator', 'location of refiner', 'distributor', 
+                                            'Variable'])))
+    for i, (key, grp) in enumerate(city_df_long.groupby(['refiner', 'branded_indicator', 
                                           'location of refiner', 'distributor', 'Variable'])):
-        refiner, branded_unbranded, loc_refiner, distributor, var = key
-        if refiner != '.' or branded_unbranded != '.' or loc_refiner != '.' or distributor != '.':
-            if refiner == '.' and branded_unbranded != '.':
-                label = f"{branded_unbranded} (total)"
-                if branded_unbranded == 'branded':
+        company, branded_indicator, loc_refiner, distributor, var = key
+        if company != '.' or branded_indicator != '.' or loc_refiner != '.' or distributor != '.':
+            if company == '.' and branded_indicator != '.':
+                label = f"{branded_indicator} (total)"
+                if branded_indicator == 'branded':
                     plt.plot(grp['date'], grp['4_month_moving_avg'], linewidth=4, label=label, 
                          color='green')
-                if branded_unbranded == 'unbranded':
+                if branded_indicator == 'unbranded':
                     plt.plot(grp['date'], grp['4_month_moving_avg'], linewidth=4, label=label, 
                          color='blue')
             else:
-                label = f"{refiner}, {branded_unbranded}, {loc_refiner}, {distributor}"
+                label = f"{company}, {branded_indicator}, {loc_refiner}, {distributor}"
                 plt.plot(grp['date'], grp['4_month_moving_avg'], label=label, color=color_cycle(i))
     plt.axvline(pd.to_datetime('2015-02-01'), color='red', 
                 linestyle='--', linewidth=2, label='Torrance Refinery Fire')
