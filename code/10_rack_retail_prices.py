@@ -66,16 +66,16 @@ for df, city, code in zip(dfs,
                       'RACKE0G']):
     df['date'] = pd.to_datetime(df['date'])
     # this is the overall index, capturing the totality of rack prices for {city}
-    df.rename(columns={f'{code} PO6 R Index': f'gross price (nominal), , , , , {city}'}, inplace=True)
+    df.rename(columns={f'{code} PO6 R Index': f'bbg gross price (nominal), , , , , {city}'}, inplace=True)
     # i want to calculate the spread for a variety of variables, the list of which EXCLUDES 
     # the overall rack price and date. I am dropping the suffix 'index' from the variable names to keep clean variable names
     vars_to_calc_spread_for = list(set(
-        [col.replace(' Index', '') for col in df.columns if col not in ['date', f'gross price (nominal), , , , , {city}']]
+        [col.replace(' Index', '') for col in df.columns if col not in ['date', f'bbg gross price (nominal), , , , , {city}']]
     ))
     for var in vars_to_calc_spread_for:
-        df[f'{var} gross spread (nominal)'] = (df[f'{var} Index'] - df[f'gross price (nominal), , , , , {city}'])
-        df.rename(columns={f'{var} Index': f'{var} gross price (nominal)'}, inplace=True)
-    for spec in ['gross spread (nominal)', 'gross price (nominal)']:
+        df[f'{var} bbg gross spread (nominal)'] = (df[f'{var} Index'] - df[f'bbg gross price (nominal), , , , , {city}'])
+        df.rename(columns={f'{var} Index': f'{var} bbg gross price (nominal)'}, inplace=True)
+    for spec in ['bbg gross spread (nominal)', 'bbg gross price (nominal)']:
         df.rename(columns = {f'{code} PO6 U {spec}': f'{spec}, , unbranded, , , {city}',
                          f'{code} PO6 B {spec}': f'{spec}, , branded, , , {city}'}, inplace=True)
 # now unfortunately we have to rename manually the rest of the columns
@@ -101,7 +101,7 @@ def reshape_wide_to_long(df):
                                   values='value').reset_index()
     return df_wide
 
-for spec in ['gross spread (nominal)', 'gross price (nominal)']:
+for spec in ['bbg gross spread (nominal)', 'bbg gross price (nominal)']:
     bakersfield_df.rename(columns = {
         f'RACKE0G PO6 S26 T1 {spec}': f'{spec}, texaco, branded, , kern, bakersfield', 
         f'RACKE0G PO6 SA3 T1 {spec}': f'{spec}, chevron, branded, , kern, bakersfield', 
@@ -295,14 +295,14 @@ detailed_rack_df = pd.concat(dfs, ignore_index=True)
 cpi_df = pd.read_csv(f'{data}/cpi.csv')
 cpi_df['date'] = pd.to_datetime(cpi_df['date'])
 
-detailed_rack_df = pd.merge(detailed_rack_df, cpi_df, on='date', how='outer')
+detailed_rack_df = pd.merge(detailed_rack_df, cpi_df, on='date', how='left')
 detailed_rack_df['all-urban cpi'] = detailed_rack_df['all-urban cpi'].fillna(method='ffill')
 
 cpi_anchor = pd.to_datetime('2023-03-01')
 fixed_cpi = detailed_rack_df.loc[detailed_rack_df['date'] == cpi_anchor, 'all-urban cpi'].values[0]
 detailed_rack_df['price deflator'] = detailed_rack_df['all-urban cpi'] / fixed_cpi
 
-for spec in ['gross spread', 'gross price']:
+for spec in ['bbg gross spread', 'bbg gross price']:
     detailed_rack_df[f'{spec} (real)'] = (detailed_rack_df[f'{spec} (nominal)']
                                           /detailed_rack_df['price deflator'])
 
