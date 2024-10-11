@@ -48,7 +48,8 @@ for ffill_var in ['ust fee', 'cax cost', 'all-urban cpi', 'special district sale
             'la spot price (nominal)',
             'ny spot price (nominal)', 'gulf spot price (nominal)', 'uk brent (nominal)',
             'ca state gas sales tax rate', 'ca state gas tax','ca total gas sold', 
-            'ca share of usa gas', 'average state tax excl. ca', 'lcfs credit price', 'lcfs cost']:
+            'ca share of usa gas', 'average state tax excl. ca', 'lcfs credit price', 'lcfs cost',
+            'padd5 crude refiner acquisition cost (nominal)']:
     master_df[ffill_var] = master_df[ffill_var].fillna(
     method='ffill'
 )
@@ -146,7 +147,7 @@ master_df['average daily cost of mgs (millions)'] = ((master_df['ca total gas so
 
 # next i want to calculate a variable that severin refers to as CA Margin, 
 # which is the retail price of CA gas minus the crude price and fees/taxes in CA
-master_df['ca margin (real)'] = (master_df['california gas (retail) (nominal)'] - (master_df['uk brent (nominal)']) - master_df['ca total fees and taxes'])/master_df['price deflator']
+master_df['ca margin (real)'] = (master_df['california gas (retail) (nominal)'] - (master_df['padd5 crude refiner acquisition cost (nominal)']) - master_df['ca total fees and taxes'])/master_df['price deflator']
 
 # now let's calculate the difference between an average of the new york and gulf spot prices and LA spot price:
 master_df['spot price differential (real)'] = (master_df['la spot price (nominal)'] - ((master_df['gulf spot price (nominal)']+master_df['ny spot price (nominal)'])/2))/master_df['price deflator']
