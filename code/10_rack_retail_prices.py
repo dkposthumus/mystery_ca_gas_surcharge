@@ -1,6 +1,5 @@
 import pandas as pd
 from pathlib import Path
-import numpy as np
 # let's create a set of locals referring to our directory and working directory 
 home_dir = Path.home()
 work_dir = (home_dir / 'mystery_ca_gas_surcharge')
@@ -93,10 +92,10 @@ def reshape_wide_to_long(df):
     df_long['branded_indicator'] = variable_parts[2]
     df_long['location of refiner'] = variable_parts[3]
     df_long['distributor'] = variable_parts[4]
-    df_long['rack_city'] = variable_parts[5]
+    df_long['city'] = variable_parts[5]
     df_wide = df_long.pivot_table(index=['date', 'company', 'branded_indicator', 
                                          'location of refiner', 'distributor', 
-                                         'rack_city'], 
+                                         'city'], 
                                   columns='spec', 
                                   values='value').reset_index()
     return df_wide

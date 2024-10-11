@@ -1,8 +1,6 @@
 import pandas as pd
 from pathlib import Path
-import numpy as np
 import matplotlib.pyplot as plt
-#import seaborn as sns
 
 # let's create a set of locals referring to our directory and working directory 
 home_dir = Path.home()
@@ -18,7 +16,7 @@ rack_detailed_df['date'] = pd.to_datetime(rack_detailed_df['date'], format='mixe
 
 def city_var_time_series(city, var_to_plot):
     # Filter the DataFrame for the specified city
-    city_df = rack_detailed_df[rack_detailed_df['rack_city'] == city]
+    city_df = rack_detailed_df[rack_detailed_df['city'] == city]
     
     # Keep only the relevant columns
     cols_keep = ['date', 'company', 'branded_indicator', 'location of refiner', 
@@ -69,7 +67,7 @@ def city_var_time_series(city, var_to_plot):
     plt.savefig(f'{rack_analysis}/{city}_spread.png')
     plt.show()
 
-for city in rack_detailed_df['rack_city'].unique(): 
+for city in rack_detailed_df['city'].unique(): 
     city_var_time_series(city, 'bbg gross spread (real)')
 
 def refiner_var_time_series(refiner, var_to_plot):
@@ -77,27 +75,27 @@ def refiner_var_time_series(refiner, var_to_plot):
     refiner_df = rack_detailed_df[rack_detailed_df['company'] == refiner]
     refiner_df = refiner_df[refiner_df['branded_indicator'] == 'branded']
     cities_of_interest = ['los angeles', 'san francisco', 'san diego', 'san jose', 'bakersfield']
-    refiner_df = refiner_df[refiner_df['rack_city'].isin(cities_of_interest)]
+    refiner_df = refiner_df[refiner_df['city'].isin(cities_of_interest)]
     # Keep only the relevant columns
-    cols_keep = ['date', 'rack_city', 'location of refiner', 
+    cols_keep = ['date', 'city', 'location of refiner', 
                  'distributor', var_to_plot]
     refiner_df = refiner_df[cols_keep]
-    refiner_df = refiner_df.fillna({'rack_city': '.', 
+    refiner_df = refiner_df.fillna({'city': '.', 
                               'location of refiner': '.', 'distributor': '.'})
     refiner_df_long = pd.melt(refiner_df, 
-                           id_vars=['date', 'location of refiner', 'distributor', 'rack_city'],
+                           id_vars=['date', 'location of refiner', 'distributor', 'city'],
                            value_vars=var_to_plot,
                            var_name='Variable',
                            value_name='Value')
     plt.figure(figsize=(14, 7))
     refiner_df_long = refiner_df_long.sort_values(by='date')
-    refiner_df_long['4_month_moving_avg'] = (refiner_df_long.groupby(['rack_city', 
+    refiner_df_long['4_month_moving_avg'] = (refiner_df_long.groupby(['city', 
                                                         'location of refiner', 'distributor', 
                                                         'Variable'])['Value']
                                         .transform(lambda x: x.rolling(window=122, min_periods=1).mean()))
-    color_cycle = plt.cm.get_cmap('tab20', len(refiner_df_long.groupby(['rack_city', 
+    color_cycle = plt.cm.get_cmap('tab20', len(refiner_df_long.groupby(['city', 
                                     'location of refiner', 'distributor', 'Variable'])))
-    for i, (key, grp) in enumerate(refiner_df_long.groupby(['rack_city', 
+    for i, (key, grp) in enumerate(refiner_df_long.groupby(['city', 
                                           'location of refiner', 'distributor', 'Variable'])):
         city, loc_refiner, distributor, var = key
         if city != '.' or loc_refiner != '.' or distributor != '.':
