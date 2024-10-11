@@ -315,12 +315,14 @@ detailed_rack_df = detailed_rack_df.loc[detailed_rack_df['date'] >= start_date]
 def assign_index_names(row):
     if row['company'] == '' and row['location of refiner'] == '' and row['distributor'] == '':
         if row['branded_indicator'] == '':
-            return 'BBG average'
+            return 'average'
         elif row['branded_indicator'] == 'unbranded':
             return 'unbranded average'
         elif row['branded_indicator'] == 'branded':
             return 'branded average'
     return row['company']  # Return the original company value if no conditions are met
+
+detailed_rack_df.loc[detailed_rack_df['company'].isin(['branded average', 'unbranded average']), 'branded_indicator'] = ''
 
 # Apply the function to each row in the DataFrame
 detailed_rack_df['company'] = detailed_rack_df.apply(assign_index_names, axis=1)
