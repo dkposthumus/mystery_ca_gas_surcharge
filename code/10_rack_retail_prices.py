@@ -185,7 +185,7 @@ for spec in ['bbg gross spread (nominal)', 'bbg gross price (nominal)']:
     imperial_df.rename(columns={
         f'RACKL0G PO6 SK8 T1 {spec}': f'{spec}, valero, branded, , kinder morgan, imperial', 
         f'RACKL0G PO6 SL6 T1 {spec}': f'{spec}, valero, unbranded, , kinder morgan, imperial', 
-        f'RACKL0G PO6 SMC T1 {spec}': f'{spec}, tesoro, shell branded, , kinder morgan, imperial', 
+        f'RACKL0G PO6 SMC T1 {spec}': f'{spec}, tesoro shell, branded, , kinder morgan, imperial', 
         f'RACKL0G PO6 S04 T1 {spec}': f'{spec}, marathon, unbranded, , kinder morgan, imperial', 
         f'RACKL0G PO6 SQF T1 {spec}': f'{spec}, idemitsu apollo, , , kinder morgan, imperial', 
         f'RACKL0G PO6 SR5 T1 {spec}': f'{spec}, shell, branded, , kinder morgan, imperial', 
