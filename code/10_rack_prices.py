@@ -80,8 +80,8 @@ for net_gross, net_gross_letter in zip(['gross', 'net'], ['G', 'N']):
             df.rename(columns={f'{var} Index': f'{var} dtn {net_gross} price (nominal)'}, inplace=True)
 
         for spec in [f'dtn {net_gross} spread (nominal)', f'dtn {net_gross} price (nominal)']:
-            df.rename(columns = {f'{code} PO6 U {spec}': f'{net_gross}, , unbranded, , , {city}',
-                         f'{code} PO6 B {spec}': f'{net_gross}, , branded, , , {city}'}, inplace=True)
+            df.rename(columns = {f'{code} PO6 U {spec}': f'{spec}, , unbranded, , , {city}',
+                         f'{code} PO6 B {spec}': f'{spec}, , branded, , , {city}'}, inplace=True)
     # now unfortunately we have to rename manually the rest of the columns
     # the naming convention I follow is as follows: 
     # {spec}, {refiner}, branded/unbranded/ , {location of refiner}, {distributor}, {rack fuel location}
@@ -207,7 +207,7 @@ for net_gross, net_gross_letter in zip(['gross', 'net'], ['G', 'N']):
             f'RACKN0{net_gross_letter} PO6 SJA T3 {spec}': f'{spec}, conocophillips, unbranded, rancho cordova, kinder morgan, sacramento', 
             f'RACKN0{net_gross_letter} PO6 SJA T7 {spec}': f'{spec}, conocophillips, unbranded, phillips 66, sacramento', 
             f'RACKN0{net_gross_letter} PO6 SK8 T3 {spec}': f'{spec}, valero, branded, rancho cordova, kinder morgan, sacramento', 
-            f'RACKN0{net_gross_letter} PO6 SL6 T3 {spec}': f'{spec}, alero, unbranded, rancho cordova, kinder morgan, sacramento', 
+            f'RACKN0{net_gross_letter} PO6 SL6 T3 {spec}': f'{spec}, valero, unbranded, rancho cordova, kinder morgan, sacramento', 
             f'RACKN0{net_gross_letter} PO6 SO4 T3 {spec}': f'{spec}, marathon, unbranded, rancho cordova, kinder morgan, sacramento', 
             f'RACKN0{net_gross_letter} PO6 SP4 T3 {spec}': f'{spec}, marathon, branded, rancho cordova, kinder morgan, sacramento', 
             f'RACKN0{net_gross_letter} PO6 SQF T3 {spec}': f'{spec}, idemitsu apollo, , rancho cordova, kinder morgan, sacramento', 
@@ -342,7 +342,7 @@ for net_gross in ['gross', 'net']:
                                           /detailed_rack_merged_df['price deflator'])
 
 detailed_rack_merged_df['date'] = pd.to_datetime(detailed_rack_merged_df['date'])
-start_date = pd.to_datetime('2012-05-01')
+start_date = pd.to_datetime('2010-10-01')
 detailed_rack_merged_df = detailed_rack_merged_df.loc[detailed_rack_merged_df['date'] >= start_date]
 current_date = datetime.now()
 detailed_rack_merged_df = detailed_rack_merged_df.loc[detailed_rack_merged_df['date'] <= current_date]
