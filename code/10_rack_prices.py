@@ -80,8 +80,8 @@ for net_gross, net_gross_letter in zip(['gross', 'net'], ['G', 'N']):
             df.rename(columns={f'{var} Index': f'{var} dtn {net_gross} price (nominal)'}, inplace=True)
 
         for spec in [f'dtn {net_gross} spread (nominal)', f'dtn {net_gross} price (nominal)']:
-            df.rename(columns = {f'{code} PO6 U {net_gross}': f'{net_gross}, , unbranded, , , {city}',
-                         f'{code} PO6 B {net_gross}': f'{net_gross}, , branded, , , {city}'}, inplace=True)
+            df.rename(columns = {f'{code} PO6 U {spec}': f'{net_gross}, , unbranded, , , {city}',
+                         f'{code} PO6 B {spec}': f'{net_gross}, , branded, , , {city}'}, inplace=True)
     # now unfortunately we have to rename manually the rest of the columns
     # the naming convention I follow is as follows: 
     # {spec}, {refiner}, branded/unbranded/ , {location of refiner}, {distributor}, {rack fuel location}
