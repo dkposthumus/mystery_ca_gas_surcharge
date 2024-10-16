@@ -342,7 +342,7 @@ for net_gross in ['gross', 'net']:
                                           /detailed_rack_merged_df['price deflator'])
 
 detailed_rack_merged_df['date'] = pd.to_datetime(detailed_rack_merged_df['date'])
-start_date = pd.to_datetime('2010-01-01')
+start_date = pd.to_datetime('2012-05-01')
 detailed_rack_merged_df = detailed_rack_merged_df.loc[detailed_rack_merged_df['date'] >= start_date]
 current_date = datetime.now()
 detailed_rack_merged_df = detailed_rack_merged_df.loc[detailed_rack_merged_df['date'] <= current_date]
