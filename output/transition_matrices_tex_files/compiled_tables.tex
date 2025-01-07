@@ -1,0 +1,46 @@
+\documentclass[12pt]{article}  % You can change 'article' to 'report' or 'book' if needed
+\usepackage{amsmath}  % Example of including packages; add as necessary
+\usepackage{graphicx}  % For including images
+\usepackage{geometry}  % To change page geometry, if desired
+\geometry{margin=1in}  % Example margin setup
+\usepackage{lscape}
+
+
+% Title and author (optional)
+\title{Compiled OPIS Retail Tables}
+\author{Daniel Posthumus}
+\date{\today}
+
+\begin{document}
+\begin{landscape}
+
+\maketitle 
+
+\tiny 
+
+\section{Los Angeles}
+\subsection{Transition Matrix}
+\input{Los Angeles_transition_matrix.tex}
+\subsection{Observed Frequencies of Store Brand}
+\input{Los Angeles_overall_counts_shares.tex}
+
+\section{Mountain View} 
+\subsection{Transition Matrix}
+\input{Mountain View_transition_matrix.tex}
+\subsection{Observed Frequencies of Store Brand}
+\input{Mountain View_overall_counts_shares.tex}
+
+\section{San Francisco}
+\subsection{Transition Matrix}
+\input{San Francisco_transition_matrix.tex} 
+\subsection{Observed Frequencies of Store Brand}
+\input{San Francisco_overall_counts_shares.tex}
+
+\section{San Jose}
+\subsection{Transition Matrix}
+\input{San Jose_transition_matrix.tex}
+\subsection{Observed Frequencies of Store Brand}
+\input{San Jose_overall_counts_shares.tex}
+
+\end{landscape}
+\end{document}
