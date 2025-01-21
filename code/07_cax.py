@@ -18,6 +18,8 @@ code = Path.cwd()
 # the same as Severin, I focus on the "Current Action Settlement Price" found in the above table
 cax = {
     'date': [
+        '11/01/2024',
+        '08/01/2024',
         '05/01/2024',
         '02/01/2024',
         '11/01/2023',
@@ -67,6 +69,8 @@ cax = {
         '11/01/2012',
     ],
     'cax price': [
+        31.91,
+        30.24,
         37.02,
         41.76,
         38.73,

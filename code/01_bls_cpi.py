@@ -27,8 +27,8 @@ def fetch_cpi_data(start_year, end_year):
 # first create empty list of all series of interest, and then append each API request onto that list
 cpi_all_series = []
 # define the data fetching process for the 3 separate intervals using function defined earlier
-for start_year in range(2000, 2024, 10):
-    end_year = min(start_year + 9, 2024)
+for start_year in range(2000, 2025, 10):
+    end_year = min(start_year + 9, 2025)
     series_data = fetch_cpi_data(str(start_year), str(end_year))
     cpi_all_series.extend(series_data)
 

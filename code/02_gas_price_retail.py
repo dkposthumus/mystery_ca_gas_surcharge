@@ -23,7 +23,7 @@ header = {
     'data': ['value'],
     'facets': {'series': ['EMM_EPM0_PTE_NUS_DPG', 'EMM_EPM0_PTE_SCA_DPG']},
     'start': '2000-01',
-    'end': '2024-07',
+    'end': '2025-01',
     'sort': [{'column': 'period', 'direction': 'asc'}],
     'offset': 0,
     'length': 5000,

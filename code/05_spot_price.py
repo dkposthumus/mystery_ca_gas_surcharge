@@ -29,7 +29,7 @@ for vars, url in zip([spt_vars, rac2_vars], urls):
             ]
         },
         'start': '2000-01',
-        'end': '2024-10',
+        'end': '2025-01',
         'sort': [{'column': 'period', 'direction': 'asc'}],
         'offset': 0,
         'length': 5000,

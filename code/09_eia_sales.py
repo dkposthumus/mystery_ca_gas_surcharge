@@ -44,7 +44,7 @@ for v in variables:
             ]
         },
         "start": "2000-01",
-        "end": "2022-03",
+        "end": "2025-01",
         "sort": [
             {
                 "column": "period",
