@@ -1,0 +1,478 @@
+\documentclass{article}
+\usepackage{graphicx}
+\providecommand{\main}{.} 
+\graphicspath{{\main/graphics/}{graphics/}}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{comment}
+\usepackage{hyperref}
+\usepackage{threeparttable}
+\usepackage{etoolbox}
+\usepackage{color,soul}
+
+\appto\TPTnoteSettings{\footnotesize}
+
+\title{Gasoline Demand Estimation}
+\author{Daniel Posthumus}
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+In this memo, I explain and present results from \textbf{preliminary} demand estimation in the California gasoline markets.
+
+Specifically, I address the following:
+\begin{itemize}
+	\item Describing the merged dataset of A15 and OPIS Retail Data, along with external datasources.
+	\item Presenting Pure Logit estimation and results.
+	\item Presenting Nested Logit estimation and results.
+\end{itemize}
+
+\section{Data} 
+
+\subsection{Sources of Data}
+
+I use the following data series
+\begin{itemize}
+	\item Daily, gas station-level retail prices from OPIS.
+		\begin{itemize}
+			\item I collapse on the (unweighted) average for each gas station in a given year.
+		\end{itemize}
+	\item Annual, gas station-level A15 data. This includes quantity and station characteristics.
+	\item EIA's annual series, \href{https://www.eia.gov/dnav/pet/hist/LeafHandler.ashx?n=PET&s=EER_EPMRU_PF4_RGC_DPG&f=A}{"U.S. Gulf Coast Conventional Gasoline Regular Spot Price FOB"}.
+	\item Census data on the total population of Zip Code Tabulation Areas (ZCTAs).
+\end{itemize}
+
+\subsection{Defining Market Size}
+
+While we have observed gas station-level quantities sold, this doesn't allow us to directly calculate observed market shares; instead, we need the denominator--market size $M_t$. This isn't as simple as summing the observed quantities sold, as we need to capture `consumption' of the outside option in each market, effectively all consumers that did \textit{not} purchase gasoline for a given zip code-year. 
+
+In practice, estimates of market size are very rough; in BLP's seminal paper (1995), for example, they simply took the number of registered vehicles in all of the United States as an estimate for the market size $M_t$ of the national automobile market. Clearly, this is only a rough approximation--many people would be happy with their cars and not looking to buy a new one, regardless of price changes. 
+
+Our need for the market size is simple: we need a way to exogenously determine the outside good share, so the outside good share is properly scaled across different zip codes with very different market sizes (such as a zip code in downtown San Francisco compared to a zip code in the north Central Valley). To accomplish this, I pull population figures from the census at a Zip Code Tabulation Area (ZCTA) and multiply this population figure by 489 gallons/person. 489 gallons is the estimated average consumption of gasoline for a registered car nationally. This resulted in some non-zero share (2-3\%) of negative outside good shares (i.e., instances where the observed quantity of gasoline sold in a given year exceeded the population times 489). To reduce the share of instances where this occurred, I multiplied all market sizes by 2; this would not bias our results as it is constantly scaled for all markets and years.
+
+We can quickly check whether this market share metric makes sense by examining the relationship between the outside good's share (represented by $s_0t$ for market $t$), such as in the following scatterplot, with a line of best fit superimposed on it:
+\begin{figure}[H]
+\centering
+	\caption{Log Price and Log Outside Good Quantity}
+		\includegraphics[width=0.8\textwidth]{diagnostics/ln_prices_outside}
+\end{figure}
+
+\subsection{Descriptive Statistics}
+
+Here is a table containing descriptive statistics of markets, as defined by Zip-Years. The rest of the paper will proceed with this definition of a market, on the Zip-Year level.
+\input{tables/market_summary_stats.tex}
+
+Here is a table showing summary statistics statistics by store brand (I selected the top 10 most common brands in California by the number of unique gas stations belonging to each brand):
+\input{tables/brand_distributions.tex}
+
+Then, from PIIRA's A15 Form, we have data on station characteristics. First, there are two possible A15 datasets: 1) the dataset CDTFA prepared and 2) the dataset I compiled from raw A15 data. As the graphics below make clear, the CDTFA-compiled data has improved data coverage pre-2014, while post-2014 the customly-put together A15 data has superior coverage in raw number of stations, as well as more variables.
+\begin{figure}[H]
+\centering
+	\begin{subfigure}[t]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{diagnostics/non_missing_diagnosis_time_series.png}
+		\caption{Share of Non-Missing Observations by Variable}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{diagnostics/non_missing_diagnosis_time_series_comp.png}
+		\caption{Number of Unique Gas Stations by Dataset}
+	\end{subfigure}
+\caption{Data Coverage of A15 Data Over Time}
+\end{figure}
+
+Next, we can get a sense of what these variables mean. Below, I've compiled summary statistics for each of the A15 variables, broken out by 1) all stations, 2) branded non-hypermarket stations, and 3) hypermarket stations, and 4) unbranded stations.
+\textbf{Note}: one point of confusion with respect to the A15 data is how to treat missing amenity data; for the purpose of this project, I've assumed that where amenity data is missing and all other variables are not missing, that station does not have any amenities.
+
+\begin{table}[H]
+\centering
+\caption{Summary Statistics of Station Characteristics from PIIRA A15 Data}
+ 	\input{tables/a15_summary_statistics.tex}
+\end{table}
+
+Regarding the amenity data, we can see the hypermarkets are much likelier to have a kiosk or a supermarket general store, while the vast majority of non-hypermarket gas stations, branded or unbranded, have an attached convenience store -- although, interestingly, the rate is significantly lower for unbranded stations than branded non-hypermarket stations (the same is true for kiosks). 
+
+\section{Pure Logit}
+
+\subsection{Estimation}
+As discussed further below in the appendix, by assuming there is no systematic consumer heterogeneity in preferences, we are left with the following equation:
+\begin{gather}
+	\ln(s_{jt}) - \ln(s_{0t}) = \ln(\frac{s_{jt}}{s_{0t}}) = x_{jt} \beta - \alpha p_{jt} + \xi_{jt}
+\end{gather}
+This equation is fully identified; market shares, including for the outside good; prices; and product characteristics are all observed. This allows us to estimate the equation using OLS or 2SLS. The motivation for 2SLS is clear; price is endogenous, as it will be correlated with unobserved demand shocks, represented by $\xi_{jt}$. There are several possible instruments for price; for now, we are using one type--a cost shifter that changes marginal cost in an exogenous fashion--RBOB spot prices on the gulf coast. RBOB represents one input cost for producing CARBOB, the CA-specific blend of gasoline required by law to be sold in the state. However, the marginal barrel of gasoline sold in California originates from Asia, so we can conclude that demand in California would not substantively shift RBOB spot prices on the Gulf Coast.
+
+For now, the only non-price characteristics included are selected brand fixed effects; I selected the top 5 most common brands in the data as well as hypermarket gas stations and included fixed effects for these 6 categories of stations. Thus, the estimates of the fixed effects should be interpreted as relative to all gas stations in the market outside of the top 5 most common brands (which appear to align with refiner brands) and hypermarkets. I included a constant; all fixed estimates should be interpreted relative to unbranded stations.
+ 
+Derived in the appendix, the elasticities for this pure logit model take the following forms (own- and cross-price elasticities, respectively):
+\begin{gather}
+	\eta_{jjt} =  \alpha \cdot p_{jt} \cdot (1 - s_{jt}) \\
+	\eta_{jkt} = -\alpha \cdot p_{kt} \cdot s_{kt}
+\end{gather}
+
+The elasticties reported in the results table below are the simple average across all products in all markets.
+
+\subsection{Results}
+First, we start with the simplest model, where there is no product differentiation. We have just two products: the inside good and the outside good. To formalize this market, there are only $j \in {0, 1}$ products where $j_{0t}$ is the outside good and $j_{1t}$ is the inside good. We calculate $s_{1t}$ as the sum of the observed shares in the data. We take $p_{1t}$ as the market share-weighted average price of all observations in the data for market $t$. Since there is no intra-market variation in prices, we are not able to use ZIP fixed effects, and run two specifications: 1) without and 2) with the RBOB Gulf Coast Spot Price as an instrument for retail price.
+
+The results from this estimation are reported below in Panel A, with the first stage coefficient on the RBOB instrument in Panel B, the results of which indicate the instrument is quite strong.
+\begin{table}[H]
+\centering
+\caption{Pure Logit Results Without Product Differentiation}
+\begin{threeparttable}
+	\input{tables/no_differentiation_pure_logit.tex}	
+\begin{tablenotes}
+\centering
+	\item[a] Significance levels: * $p < 0.1$, ** $p < 0.05$, *** $p < 0.01$.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+Next, I estimated the pure logit model \textit{with} product differentiation among the inside goods, introducing brand fixed effects for the top 5 most common brands and unbranded stations. I've included results estimated directly using either OLS or IV in Panel A. I've also included the first stage coefficient on the RBOB instrument in Panel B.
+
+\begin{table}[H]
+\centering
+\caption{Pure Logit Results With Product Differentiation}
+\begin{threeparttable}
+	\input{tables/ols_iv_manual_check_pure_logit.tex}
+	\begin{tablenotes}
+	\centering
+		\item[a] Significance levels: * $p < 0.1$, ** $p < 0.05$, *** $p < 0.01$.
+	\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{Aggregate Elasticities}
+While \textit{mean} elasticities are constructive, we also want to understand the aggregate elasticity -- which will give us an idea about the extensive margin, or substitution to the outside good. 
+
+We can start by expressing the total share of inside goods across all markets with respect to mean utility, denoted as $\delta_{jt}$ for product $j$ in market $t$. 
+\begin{gather}
+	\sum_{l \in T} \sum_{k \in J_l} s_{k l} = \sum_{l \in T} \frac{\sum_{k \in J_l} \exp(\delta_{k l})}{1 + \sum_{k \in J_l} \delta_{k l}}
+\end{gather}
+where $T$ represents the set of all markets and $J_l$ represents the set of all products in market $l$. 
+
+We can observe that markets are perfectly segmented. Say a characteristic of product 1 in market 1 changes and all other products/markets are held constant. Consumption patterns in market 1 will change, as $\delta_{1, 1}$ enters into market share equation for all products in market 1. However, consumption patterns in any market $t \neq 1$ will remain unchanged. 
+
+Let's say we want to the aggregate elasticity with respect to average price, constant across all products and markets denoted as $\bar{p}$. Then we can re-write the mean utility function to be the following:
+\begin{gather}
+	p_{jt} = \bar{p} + e_{jt} \\
+	\delta_{jt} = \beta X_{jt} - \alpha_1 (\bar{p}) + \alpha_2 (e_{jt}) + \epsilon_{jt}
+\end{gather}
+this is directly estimable and we can easily derive with respect to average price:
+\begin{gather}
+	\frac{\partial \delta_{jt}}{\partial \bar{p}} = - \alpha_1
+\end{gather}
+
+While this sounds promising in theory, we are caught in something of a bind; $\bar{p}$ is constant for every observation -- thus computationally it will be calculated as part of the intercept (with perfect collinearity between it and the constant term). Yet, if we introduce variation in the mean price -- say, at the ZIP level -- we can't aggregate our elasticity. \textbf{Elasticity can only be aggregated at the level of aggregation at which we average price.} Thus, we want some variation but not too much. 
+
+An elegant solution is to observe elasticity at the year level; average price will be subscripted at the year-level (denoted by the subscript $y$) and we can derive different statewide aggregate elasticities by year. Then, let's re-write our equations from above:
+\begin{gather}
+	p_{jt} = \bar{p}_y + e_{jt} \\
+	\delta_{jt} = \beta X_{jt} - \alpha_1 (\bar{p}_y) + \alpha_2 (e_{jt}) + \epsilon_{jt}
+\end{gather}
+this is directly estimable and we can easily derive with respect to average price:
+\begin{gather}
+	\frac{\partial \delta_{jt}}{\partial \bar{p}_y} = - \alpha_1
+\end{gather}
+
+Then, we can derive the aggregate market share with respect to average price (where $m_l$ is the market size of each market). I don't subscript all quantities by year for simplicity's sake.
+\begin{gather}
+	Q = \sum_{l \in T} m_l \sum_{k \in J_l} s_{k l} \\ 
+	M_t = \sum_{k \in K_t} \exp(\delta_{kt}) \\ 
+	\frac{\partial M_t}{\partial \bar{p}} = -\alpha_1 M_t \\
+	\frac{\partial}{\partial \bar{p}} (\sum_{k \in J_t} \delta_{kl}) = -\alpha_1 N_t \\
+	\frac{Q}{\partial \bar{p}_y} = -\alpha_1 \sum_{l \in T_y} m_l (\sum_{k \in J_t} s_{kl})(\frac{1 + (\sum_{k \in J_t} \delta_{kt}) - N_t}{1 + (\sum_{k \in J_t} \delta_{kt})})
+\end{gather}
+Where $N_t$ is the number of products in market $t$ and $T_y$ the set of all markets in year $y$ (recall that markets are defined as zip-years). Then, the own-price elasticity can be written as the following:
+\begin{gather}
+	\eta_{jjy} = \frac{Q}{\partial \bar{p}_y} \times \frac{\bar{p}_y}{Q}
+\end{gather}
+this aggregate own-price elasticity, \textbf{the aggregate own-price elasticity with respect to the average statewide price of gasoline in California}, is directly estimable. Note that it is subscripted by year, $y$. Below I include a simple time-series plot of the aggregate own-price elasticity for California over time, for the years of our best data coverage 2015-2022:
+
+\section{Nested Logit}
+
+As discussed in the appendix, cross-price elasticities estimated by the pure logit model have a serious shortcoming: they only depend on one of the two products' price. We can counter this shortcoming, called the Independence of Irrelevant Alternatives (IIA) property, through a nested logit which has looser restrictions on the elasticity patterns. There are generally three approaches we can take to nested logit based on different nesting schemes:
+\begin{enumerate}
+	\item \textbf{One nest}: 1) all stations
+	\item \textbf{Two nests}: 1) unbranded and 2) branded stations (including hypermarkets)
+	\item \textbf{Three nests}: 1) unbranded, 2) hypermarket, and 3) non-hypermarket branded stations
+\end{enumerate}
+
+\subsection{Estimation}
+Based on the derivation in the appendix, we can use the following linear estimating equation for nested logit (for nest $h$):
+\begin{gather}
+	\ln(\frac{s_{jt}}{s_{0t}}) = x_{jt} \beta - \alpha p_{jt} + \rho \ln s_{j | h(j) t} + \xi_{jt} 
+\end{gather}
+where $s_{j | h(j)}$ is the within-nest market share (i.e., market share conditional on nest-market) for product $j$ in nest $h$ in market $t$. Note that estimating this equation requires two different instruments, one for price (we'll continue using the gulf coast spot price for RBOB) and the other for the within-group market share, which is also correlated with unobserved idiosyncratic demand shocks.
+
+Some ideas for instruments for within-nest market shares:
+\begin{itemize}
+	\item Number of stations in a nest-market
+	\item Sum of characteristics of other firms in market, i.e. a station's competitors
+\end{itemize}
+
+In the results tables, below, I report the coefficients on $\ln(p_j)$ (referred to as `log prices') and $\ln s_{j | h(j)}$ (referred to as `log conditional shares'); however, when deriving the elasticities, I use $\alpha$ and $\rho$ per the above linear equation.
+
+Derived in the appendix, the elasticities for the nested logit take the following forms for 1) own-price elasticity ($\eta_{jj}$), 2) cross-price elasticity between two products in the same nest ($\eta_{jk}$), and 3) cross-price elasticity between three products in different nests ($\eta_{jf}$).
+
+\begin{gather}
+	\eta_{jjt} = \frac{\partial s_{jt}}{\partial p_{jt}}\frac{p_{jt}}{s_{jt}} = \frac{-\alpha \cdot p_{jt}}{1 - \rho}(1 - \rho s_{j | h t} - (1 - \rho)s_{jt}) \\
+	\eta_{jkt} = \frac{\partial s_{jt}}{\partial p_{kt}}\frac{p_{kt}}{s_{jt}} = \alpha \cdot p_{kt} s_{kt} (1 + \frac{\rho}{1 - \rho} s_{j | h t}) \\  
+	\eta_{jft} = \frac{\partial s_{jt}}{\partial p_{ft}}\frac{p_{ft}}{s_{jt}} = \alpha \cdot p_{ft} s_{ft}
+\end{gather}
+
+What I report in the tables below are the simple average of each of these elasticities across all products.
+
+\subsection{Results}
+
+Here are the results from Nested Logit, manually estimated using IV methods, with number of firms per nest-market as the instrument for conditional share in Panel A, and the first stage results for both RBOB and the conditional share in Panel B. Also reported are the mean elasticities.
+
+Note that $\bar{\eta_{jft}}$ reports the elasticity of good $j$ to the price of good $f$ in market $t$, which \textit{is not} contained within the nest of good $j$. On the other hand, $\bar{\eta_{jkt}}$ reports the elasticity of different goods in the same nest.
+
+\begin{table}[H]
+\centering
+\caption{Nested Logit Estimation Results}
+\begin{threeparttable}
+	\input{tables/nested_logit_manual_results.tex}
+	\begin{tablenotes}
+	\centering
+	\item[a] Significance levels: * $p < 0.1$, ** $p < 0.05$, *** $p < 0.01$.
+	\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{Aggregate Elasticities}
+
+We want to understand how elasticity and consumption patterns are different across nests. Let there be three nests: 1) branded, 2) unbranded, and 3) hypermarket gasoline stations.
+
+Then we can write that the market share of unbranded stations in market $t$ is defined by the following:
+\begin{gather}
+	s_{ut} = \frac{D_{ut}^{(1 - \rho)}}{D_{ut}^{(1 - \rho)} + D_{bt}^{(1 - \rho)} + D_{ht}^{(1-\rho)}} \\
+	D_{ut} = \sum_{k \in J_u} \exp(\frac{\delta_k}{1 - \rho})
+\end{gather}
+where $\rho$ is the previously-estimated nesting parameter $J_u$ is the set of all unbranded goods in the market, and $\delta_k$ (as before) is the mean utility of good $k$. We can find aggregate elasticities using a similar strategy that we did for the pure logit estimation. Let:
+\begin{gather}
+	p_{jt} = \bar{p}_{hy} + e_{it} \\
+	\delta_{jt} = \beta X_{jt} - \sum_{o \in H}[(d_o \alpha_{1, o}) (\bar{p}_o)] - \alpha_2 (e_{jt}) + \epsilon_{jt}
+\end{gather}
+Where $d_h$ is a dummy equal to 1 if good $j$ is in nest $b$. \textbf{Note that, just like pure logit, average price varies by year and nest.} This means that we'll have different aggregate elasticities by nest and by year. $H$ is the set of all nests. This gives us flexibility to estimate a different price coefficient for different segments. We're essentially interacting price and a `characteristic' dummy. Thus, we can model a counterfactual where the average price of unbranded gas stations falls by \$1 and branded gas stations are the same. Or, perhaps more helpful, how demand would change if branded gas stations charged the same price for a gallon of gasoline that the nearest unbranded gas station does.
+
+Note that each nest has its own average and thus its own $\alpha_{1, h}$ parameter. First, let's differentiate the share of the unbranded nest with respect to the mean unbranded price ($\bar{p}_h$). The derivative takes the following form:
+\begin{gather}
+	\frac{\partial D_{ut}}{\partial \bar{p}_{uy}} = -\alpha_{1, u} D_u \\
+	\frac{\partial D_{bt}}{\partial \bar{p}_{uy}} = 0 \\
+	\frac{\partial D_{ht}}{\partial \bar{p}_{uy}} = 0 \\
+	\frac{\partial (D_{ut}^{(1-\rho)})}{\partial \bar{p}_{uy}} = (1-\rho)(D_{ut}^{(1-\rho)})(-\alpha_{1, u}) \\
+	\frac{\partial s_{ut}}{\partial \bar{p}_{uy}} =  - (\alpha_{1, u}) (1 - \rho) (D_u^{1-\rho}) \frac{D_b^{(1-\rho)} + D_h^{(1-\rho)}}{(D_u^{(1-\rho)} + D_b^{(1-\rho)} + D_h^{(1-\rho)})^2} = - (\alpha_{1, u}) (1 - \rho) (s_{ut}) \frac{D_b^{(1-\rho)} + D_h^{(1-\rho)}}{D_u^{(1-\rho)} + D_b^{(1-\rho)} + D_h^{(1-\rho)}}
+\end{gather}
+Then, we can derive the nest market share of unbranded with respect to the mean price of branded gasoline:
+\begin{gather}
+	\frac{\partial D_{bt}}{\partial \bar{p}_{by}} = -\alpha_{1, b} D_{bt} \\
+	\frac{\partial D_{ut}}{\partial \bar{p}_{by}} = 0 \\
+	\frac{\partial (D_{bt}^{(1-\rho)})}{\partial \bar{p}_{by}} = (1-\rho)(D_b^{(1-\rho)})(-\alpha_{1, b}) \\
+	\frac{\partial s_{ut}}{\partial \bar{p}_{by}} = (\alpha_{1, b})(1 - \rho) (D_b^{1-\rho}) \frac{D_u^{(1-\rho)}}{(D_u^{(1-\rho)} + D_b^{(1-\rho)} + D_h^{(1-\rho)})^2} =  (\alpha_{1, b}) (1 - \rho) (s_{bt}) \frac{D_u^{(1-\rho)}}{D_u^{(1-\rho)} + D_b^{(1-\rho)} + D_h^{(1-\rho)}}
+\end{gather}
+From there, we can infer the derivative with respect to the average price of hypermarket stations to be the following:
+\begin{gather}
+	\frac{\partial s_{ut}}{\partial \bar{p}_{hy}} = (\alpha_{1, h})(1 - \rho) (D_h^{-\rho}) \frac{D_u^{(1-\rho)}}{(D_u^{(1-\rho)} + D_b^{(1-\rho)} + D_h^{(1-\rho)})^2} =  (\alpha_{1, h}) (1 - \rho) (s_{ht}) \frac{D_u^{(1-\rho)}}{(D_u^{(1-\rho)}{D_u^{(1-\rho)} + D_b^{(1-\rho)} + D_h^{(1-\rho)}}
+\end{gather}
+
+But, we want \textit{aggregates}. Then, the aggregated share of unbranded gasoline sold in the state in year $y$ is the following:
+\begin{gather}
+	S_{uy} = \frac{1}{Q_y} \sum_{l \in T_y} m_l s_{ul} 
+\end{gather}
+where $Q_y$ is the total quantity of gasoline sold in California in year $y$ and $T_y$ is the set of all markets associated with year $y$ (recall that markets are defined as zip-years). Then we can apply our previously-found derivative:
+\begin{gather}
+	\frac{\partial S_{uy}}{\partial \bar{p}_{uy}} = \frac{1}{Q_y} \sum_{l \in T_y} m_l \frac{\partial s_{ul}}{\partial \bar{p}_{uy}} \\
+	\eta_{uuy} = \frac{\partial S_{uy}}{\partial \bar{p}_{uy}} \frac{\bar{p}_{uy}}{S_{uy}} = - \frac{\bar{p}_{by} \alpha_{1, b} (1-\rho)}{Q_y} \sum_{l \in T_y} \frac{q_{ul} (D_b^{(1-\rho)} + D_h^{(1-\rho)})}{D_u^{(1-\rho)} + D_b^{(1-\rho)} + D_h^{(1-\rho)}} \\
+	\frac{\partial S_{uy}}{\partial \bar{p}_{by}} = \frac{1}{Q_y} \sum_{l \in T_y} m_l \frac{\partial s_{ul}}{\partial \bar{p}_{by}} \\
+	\eta_{uby} = \frac{\partial S_{uy}}{\partial \bar{p}_{by}} \frac{\bar{p}_{by}}{S_{uy}} = \frac{\bar{p}_{by} \alpha_{1, b} (1-\rho)}{Q_y} \sum_{l \in T_y} \frac{q_{bl} D_{ul}^{(1-\rho)}}{D_{ul}^{(1-\rho)} + D_{bl}^{(1-\rho)} + D_{hl}^{(1-\rho)}} \\
+	\frac{\partial S_{uy}}{\partial \bar{p}_{hy}} = \frac{1}{Q_y} \sum_{l \in T_y} m_l \frac{\partial s_{ul}}{\partial \bar{p}_{hy}} \\
+	\eta_{uhy} = \frac{\partial S_{uy}}{\partial \bar{p}_{hy}} \frac{\bar{p}_{hy}}{S_{uy}} = \frac{\bar{p}_{hy} \alpha_{1, h} (1-\rho)}{Q_y} \sum_{l \in T_y} \frac{q_{hl} D_{ul}^{(1-\rho)}}{D_{ul}^{(1-\rho)} + D_{bl}^{(1-\rho)} + D_{hl}^{(1-\rho)}}
+\end{gather}
+Where $q_{ul}$ refers to the total quantity of unbranded gasoline sold in market $l$ (correspondingly for branded and hypermarket gasoline). Now we can compute each of these elasticities and plot them by year. To compare apples-to-apples, below I've compared the estimates of own-price elasticities over time across the three nests, and in another graph I've compared the different cross-price elasticities. \textbf{Note that the sign is flipped for hypermarkets; I'm not sure why this is showing up in the data, but essentially the $\alpha_{1, h}$ coefficient is positive, suggesting higher average hypermarket prices in a given market increase the likelihood of consuming hypermarket gasoline.}
+
+\section{Appendix}
+
+\subsection{`Cheat Sheet' of Market Share and Elasticity Equations}
+
+\subsubsection{Pure Logit Model}
+
+\begin{gather}
+	\ln(\frac{s_{jt}}{s_{0t}}) = x_{jt} - \alpha p_{jt} + \xi_{jt} \\
+	\eta_{jjt} =  \alpha \cdot p_{jt} \cdot (1 - s_{jt}) \\
+	\eta_{jkt} = -\alpha \cdot p_{kt} \cdot s_{kt}
+\end{gather}
+
+\subsubsection{Nested Logit Model}
+
+For nested logit, we have three elasticities: 1) own-price elasticity ($\eta_{jjt}$), 2) cross-price elasticity between two different products in the same nest ($\eta_{jkt}$), and 3) cross-price elasticity between two products in different nests ($\eta_{jft}$).
+
+\begin{gather}
+	\ln(\frac{s_{jt}}{s_{0t}}) = x_{jt} \beta - \alpha p_{jt} + \rho \ln s_{j | h(j) t} + \xi_{jt} \\
+	\eta_{jjt} = \frac{\partial s_{jt}}{\partial p_{jt}}\frac{p_{jt}}{s_{jt}} = \frac{-\alpha \cdot p_{jt}}{1 - \rho}(1 - \rho s_{j | h t} - (1 - \rho)s_{jt}) \\
+	\eta_{jkt} = \frac{\partial s_{jt}}{\partial p_{kt}}\frac{p_{kt}}{s_{jt}} = \alpha \cdot p_{kt} s_{kt} (1 + \frac{\rho}{1 - \rho} s_{j | h t}) \\  
+	\eta_{jft} = \frac{\partial s_{jt}}{\partial p_{ft}}\frac{p_{ft}}{s_{jt}} = \alpha \cdot p_{ft} s_{ft}
+\end{gather}
+
+\subsection{Data Build Notes}
+
+Building the data required different sources of data and upon merging these sources of data, some observations were lost. To ensure this didn't introduce bias into the data, I've compiled the following table comparing summary statistics for different stages of the data build:
+
+\begin{table}[H]
+	\caption{Summary Statistics Across Steps of Data Build}
+\resizebox{\textwidth}{!}{
+		\input{tables/attrition_table.tex}
+}
+\end{table}
+
+Our different sources of data have differing intervals of time covered, as the kernel density plot estimate below illustrates:
+\begin{figure}[H]
+\centering
+	\includegraphics[width=0.8\textwidth]{year_kde_plots.png}
+\end{figure}
+
+Thus, I can recreate the summary statistics table, \textit{first restricting} the OPIS and A15 data by date (to 2015-2023):
+
+\begin{table}[H]
+	\caption{Summary Statistics Across Steps of Data Build}
+\resizebox{\textwidth}{!}{
+		\input{tables/attrition_table_yr_restricted.tex}
+}
+\end{table}
+
+\subsection{State-Wide Geographic Visualizations}
+
+\begin{figure}[H]
+\centering
+	\caption{Heatmaps of Volume-Weighted Average Retail Prices on ZIP Level}
+	\begin{subfigure}[t]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{zip_heatmap_0_Bay Area.png}
+		\caption{Bay Area}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{zip_heatmap_0_Los Angeles.png}
+		\caption{Los Angeles County}
+	\end{subfigure}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+	\caption{Heatmaps of Uniquely Identified Gasoline Stations on ZIP Level}
+	\begin{subfigure}[t]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{zip_heatmap_product_ids_Bay Area.png}
+		\caption{Bay Area}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{zip_heatmap_product_ids_Los Angeles.png}
+		\caption{Los Angeles County}
+	\end{subfigure}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+	\caption{Heatmaps of Average Annual Observed Quantity Sold of Gasoline on ZIP Level}
+	\begin{subfigure}[t]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{zip_heatmap_Regular Gasoline_Bay Area.png}
+		\caption{Bay Area}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{zip_heatmap_Regular Gasoline_Los Angeles.png}
+		\caption{Los Angeles County}
+	\end{subfigure}
+\end{figure}
+
+\subsection{Instruments Descriptives}
+
+\subsubsection{RBOB Gulf Coast}
+
+Here is a time-series, with the volume-weighted average gasoline prices in the sample plotted alongside the RBOB Gulf Coast Spot Price (all nominal) over time:
+\begin{figure}[H]
+\centering
+	\includegraphics[width=0.8\textwidth]{rbob_time_series.png}
+\end{figure}
+
+\subsubsection{Number of Firms in Each Nest-Market}
+
+Below, I've included a scatterplot showing the relationship between the number of products in each nest-market (by nest designation) and log conditional market share. This provides suggestive evidence that there is a positive correlation here, suggesting the number of products in nest-market has some strength as an instrument.
+
+\begin{figure}[H]
+\centering
+	\caption{Scatterplots of Number of Products In Nest-Market and Market Share Conditional on Nest-Market}
+	\begin{subfigure}[t]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{basic_scatter.png}
+		\caption{Inside Good Nest}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{un_branded_scatter.png}
+		\caption{Branded -- Unbranded Nests}
+	\end{subfigure}
+
+	\begin{subfigure}[t]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{hypermarket_scatter}
+		\caption{Non-Hypermarket Branded -- Hypermarket -- Unbranded Nests}
+	\end{subfigure}
+\end{figure}
+
+\subsection{Market Shares Descriptives}
+
+After dropping instances where the resulting outside good market share ($s_{0t}$) was negative (this amounted to ), we have the following distributions for the outside good and inside good shares:
+\begin{figure}[H]
+\centering
+\begin{subfigure}[t]{0.4\textwidth}
+\includegraphics[width=\textwidth]{s_0_hist_zip3}
+\caption{Zip3-Level Market Outside Good Shares ($s_{0t}$)}
+\end{subfigure}
+\begin{subfigure}[t]{0.4\textwidth}
+\includegraphics[width=\textwidth]{s_0_hist_zip}
+\caption{Zip-Level Markets Outside Good Shares ($s_{0t}$)}
+\end{subfigure}
+\begin{subfigure}[t]{0.4\textwidth}
+\includegraphics[width=\textwidth]{s_j_hist_zip3}
+\caption{Zip3-Level Market Inside Good Shares ($s_{jt}$)}
+\end{subfigure}
+\begin{subfigure}[t]{0.4\textwidth}
+\includegraphics[width=\textwidth]{s_j_hist_zip}
+\caption{Zip-Level Markets Inside Good Shares ($s_{jt}$)}
+\end{subfigure}
+\end{figure}
+
+Although very large, these outside shares appear reasonable and, most importantly, incorporate the significant heterogeneity in California in population density.
+
+\subsection{Elasticities Check}
+
+Here, we try to contextualize some of the elasticity estimates from above by running some preliminary checks on elasticity. 
+
+First, I estimate the following equation:
+\begin{gather}
+	\ln(q_t) = \beta_1 \ln(p_t) + \epsilon_t
+\end{gather}
+where $q_t$ is the total observed quantity of gasoline sold in  zip-year $t$ and $p_t$ is the market share-weighted average price of gasoline sold in zip-year $t$. This is very similar to the model we ran for simple logit without product differentiation, with a different dependent variable (here simply $\ln(q)$ rather than $\ln(\frac{s_jt}{s_0t})$. In one specification I include the RBOB Gulf Coast Spot Price as the instrument for price, while in the other I don't instrument for price. The results of those estimations can be found here:
+\begin{table}[H]
+\centering
+\caption{Market-Level Demand Estimation}
+\begin{threeparttable}
+	\input{tables/market_level_elasticity.tex}
+	\begin{tablenotes}
+		\centering
+		\item[a] Significance levels: * $p < 0.1$, ** $p < 0.05$, *** $p < 0.01$.
+	\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+Then, we can visualize the relationship between price and quantity on an aggregated, statewide level (prices volume-weighted average across the whole state and observed quantities sold summed) in the following graphics:
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}[t]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{diagnostics/ln_avg_p_ln_quantity_scatter.png}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{diagnostics/ln_avg_rbob_ln_quantity_scatter.png}
+	\end{subfigure}
+\caption{State-Wide Relationships Between Price/RBOB Gulf Coast and Quantity}
+\end{figure}
+
+
+\end{document}
