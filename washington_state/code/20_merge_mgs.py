@@ -16,6 +16,8 @@ cpi = pd.read_csv(f'{clean_data}/cpi.csv')
 gas_retail_df = pd.read_csv(f'{clean_data}/gas_retail.csv')
 # tax data
 gas_taxes_df = pd.read_csv(f'{clean_data}/gas_taxes.csv')
+# cap and invest cost 
+cax = pd.read_csv(f'{clean_data}/cax.csv')
 '''# special district tax 
 special_district_tax_df = pd.read_excel(f'{raw_data}/special_district_sales_tax.xlsx', header = 1)
 special_district_tax_df['date'] = pd.to_datetime(special_district_tax_df['MonthYear'])
@@ -23,6 +25,7 @@ special_district_tax_df.drop(columns={'MonthYear'}, inplace=True)'''
 # let's merge on date for each of the 4 datasets of interest:
 master_df = pd.merge(cpi, gas_retail_df, on='date', how='outer')
 master_df = pd.merge(master_df, gas_taxes_df, on='date', how='outer')
+master_df = pd.merge(master_df, cax, on='date', how='outer')
 
 master_df['date'] = pd.to_datetime(master_df['date'])
 
@@ -38,18 +41,20 @@ vars_ffill = ['ust fee', 'cax cost', 'all-urban cpi', 'special district sales ta
 vars_ffill = [
     'all-urban cpi', 'washington gas (retail) (nominal)', 'national gas (retail) (nominal)',
     'wa excise tax', 'wa total gas sold', 'wa share of usa gas', 'average state tax excl. wa', 
+    'cax cost'
 ]
 for ffill_var in vars_ffill:
     master_df[ffill_var] = master_df[ffill_var].fillna(
     method='ffill'
 )
+    
+# now for those vars_ffill, fill in missing observations of 'cax cost' with 0s
+master_df['cax cost'] = master_df['cax cost'].fillna(0)
+
 # Set 'Date' as index
 master_df.set_index('date', inplace=True)
 # make sure that date variable is datetime
 master_df.index = pd.to_datetime(master_df.index)
-
-# Severin assumes that the NOMINAL cost premium to produce CA's cleaner-burning gasoline blend is CONSTANT, at 10 cents 
-master_df['carb cost premium'] = 0.1
 
 # next I need to calculate a separate variable, a national retail price average EXCLUDING california
 # for this step, I am incorporating CA's share of national gasoline sold (in gallons)
@@ -81,21 +86,17 @@ master_df['price deflator'] = master_df['all-urban cpi'] / fixed_cpi
 # now multiply by california's nominal retail gas price to find the cost per gallon, INCLUSIVE of the gas tax
 '''master_df['ca state.local tax rate'] = master_df['ca state gas sales tax rate'] + master_df['special district sales tax']
 master_df['ca state.local tax cost'] = (master_df['ca state.local tax rate']/(master_df['ca state.local tax rate']+1))*master_df['california gas (retail) (nominal)']
-
+'''
 # now i want to create a total taxes and fees variable for california
-master_df['ca total fees and taxes'] = (
-    master_df['ca state gas tax'] 
-    + master_df['ca state.local tax cost']
-    + master_df['lcfs cost']
-    + master_df['ust fee']
-    + master_df['carb cost premium']
+master_df['wa total fees and taxes'] = (
+    master_df['wa excise tax'] 
     + master_df['cax cost']
-)'''
+)
 
 # let's now calculate the mystery gas surcharge
 master_df['unexplained differential (nominal)'] = (
     master_df['washington gas (retail) (nominal)']
-    - master_df['wa excise tax']
+    - master_df['wa total fees and taxes']
 ) - (
     master_df['national retail excl. wa (nominal)']
     - master_df['average state tax excl. wa']
@@ -130,10 +131,12 @@ master_df['days in month'] = master_df.apply(lambda row: days_in_month(row['year
 # I want to find the total cost per month paid by california drivers
     # this formula is simply the total gas sold in california monthly x the unexplained differential
     # note: i'm using the REAL unexplained differential
-master_df['monthly cost of surcharge (millions)'] = (master_df['unexplained differential (real)']*master_df['wa total gas sold'])/1000000
+master_df['monthly cost of surcharge (millions)'] = (master_df['unexplained differential (real)']
+                                        *master_df['wa total gas sold'])/1000000
 # now let's find the average per day, using the 12-month moving average divided by 30.5
 # now divide that moving average by 30.5 and multiply by unexplained differential to find the daily average cost
-master_df['average daily cost of mgs (millions)'] = ((master_df['wa total gas sold']/master_df['days in month'])*master_df['unexplained differential (real)'])/1000000
+master_df['average daily cost of mgs (millions)'] = ((master_df['wa total gas sold']
+                                        /master_df['days in month'])*master_df['unexplained differential (real)'])/1000000
 
 # next i want to calculate a variable that severin refers to as CA Margin, 
 # which is the retail price of CA gas minus the crude price and fees/taxes in CA

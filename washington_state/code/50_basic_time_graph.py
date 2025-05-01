@@ -9,7 +9,7 @@ work_dir = (home_dir / 'mystery_ca_gas_surcharge' / 'washington_state')
 data = (work_dir / 'data')
 raw_data = (data / 'raw')
 clean_data = (data / 'clean')
-ca_data = (home_dir / 'mystery_ca_gas_surcharge' / 'data')
+ca_data = (home_dir / 'mystery_ca_gas_surcharge' / 'california' / 'data')
 code = Path.cwd() 
 output = (work_dir / 'output')
 
@@ -85,16 +85,16 @@ start_date = pd.to_datetime('2003-01-01')
 end_date = pd.to_datetime('2024-06-01')
 plt.figure(figsize=(10, 6))
 plt.plot(graphing_comp['date'], graphing_comp['unexplained differential (real)'], 
-         label='CA MGS (Real)', alpha=0.7, color='blue')
+         label='CA MGS (Real)', alpha=0.4, color='blue')
 plt.plot(graphing_comp['date'], graphing_comp['annual average unexplained differential (real)'], 
          label='CA Annual Average MGS (Real)', 
-         color='blue', linewidth=1.5)
+         color='blue', linewidth=2)
 
 plt.plot(graphing_comp['date'], graphing_comp['wa_mgs_real'], 
-         label='WA MGS (Real)', alpha=0.7, color='orange')
+         label='WA MGS (Real)', alpha=0.4, color='orange')
 plt.plot(graphing_comp['date'], graphing_comp['annual average wa_mgs_real'], 
          label='WA Annual Average MGS (Real)', 
-         color='orange', linewidth=1.5)
+         color='orange', linewidth=2)
 
 plt.title('Washington vs. California Mystery Gas Surcharge (MGS) (in $2023), 2000-2024')
 plt.xlabel('Date')
