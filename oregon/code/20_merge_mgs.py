@@ -5,7 +5,7 @@ import calendar
 
 # let's create a set of locals referring to our directory and working directory 
 home_dir = Path.home()
-work_dir = (home_dir / 'mystery_ca_gas_surcharge-1' / 'nevada')
+work_dir = (home_dir / 'mystery_ca_gas_surcharge-1' / 'oregon')
 data = (work_dir / 'data')
 clean_data = (data / 'clean')
 code = Path.cwd() 
@@ -17,7 +17,7 @@ gas_retail_df = pd.read_csv(f'{clean_data}/gas_retail.csv')
 # tax data
 gas_taxes_df = pd.read_csv(f'{clean_data}/gas_taxes.csv')
 # cap and invest cost 
-cax = pd.read_csv(f'{clean_data}/cax.csv')
+cfp = pd.read_csv(f'{clean_data}/cfp.csv')
 '''# special district tax 
 special_district_tax_df = pd.read_excel(f'{raw_data}/special_district_sales_tax.xlsx', header = 1)
 special_district_tax_df['date'] = pd.to_datetime(special_district_tax_df['MonthYear'])
@@ -25,7 +25,7 @@ special_district_tax_df.drop(columns={'MonthYear'}, inplace=True)'''
 # let's merge on date for each of the 4 datasets of interest:
 master_df = pd.merge(cpi, gas_retail_df, on='date', how='outer')
 master_df = pd.merge(master_df, gas_taxes_df, on='date', how='outer')
-master_df = pd.merge(master_df, cax, on='date', how='outer')
+master_df = pd.merge(master_df, cfp, on='date', how='outer')
 
 master_df['date'] = pd.to_datetime(master_df['date'])
 
@@ -39,13 +39,17 @@ vars_ffill = ['ust fee', 'cax cost', 'all-urban cpi', 'special district sales ta
             'ca share of usa gas', 'average state tax excl. ca', 'lcfs credit price', 'lcfs cost',
             'padd5 crude refiner acquisition cost (nominal)']
 vars_ffill = [
-    'all-urban cpi', 'nevada gas (retail) (nominal)', 'national gas (retail) (nominal)',
-    'nv excise tax', 'nv total gas sold', 'nv share of usa gas', 'average state tax excl. nv'
+    'all-urban cpi', 'oregon gas (retail) (nominal)', 'national gas (retail) (nominal)',
+    'or excise tax', 'or total gas sold', 'or share of usa gas', 'average state tax excl. or', 
+    'cfp_cost'
 ]
 for ffill_var in vars_ffill:
     master_df[ffill_var] = master_df[ffill_var].fillna(
     method='ffill'
 )
+    
+# now for those vars_ffill, fill in missing observations of 'cax cost' with 0s
+#master_df['cax cost'] = master_df['cax cost'].fillna(0)
 
 # Set 'Date' as index
 master_df.set_index('date', inplace=True)
@@ -55,13 +59,13 @@ master_df.index = pd.to_datetime(master_df.index)
 # next I need to calculate a separate variable, a national retail price average EXCLUDING california
 # for this step, I am incorporating CA's share of national gasoline sold (in gallons)
 # this is an empirical improvement on Severin's assumption that CA accounts for 10% of national gasoline sold
-master_df['national retail excl. nv (nominal)'] = (
+master_df['national retail excl. or (nominal)'] = (
     master_df['national gas (retail) (nominal)']
     - (
-        master_df['nv share of usa gas']
-        * master_df['nevada gas (retail) (nominal)']
+        master_df['or share of usa gas']
+        * master_df['oregon gas (retail) (nominal)']
     )
-) / (1 - master_df['nv share of usa gas'])
+) / (1 - master_df['or share of usa gas'])
 
 # there are some CA-specific costs for which I want to replace missing observations with 0, 
 # since a missing observations indicates that program didn't exist and thus the associated cost was 0
@@ -83,28 +87,27 @@ master_df['price deflator'] = master_df['all-urban cpi'] / fixed_cpi
 '''master_df['ca state.local tax rate'] = master_df['ca state gas sales tax rate'] + master_df['special district sales tax']
 master_df['ca state.local tax cost'] = (master_df['ca state.local tax rate']/(master_df['ca state.local tax rate']+1))*master_df['california gas (retail) (nominal)']
 '''
-master_df['lvbob_cost'] = 0.05
-master_df['county_tax'] = 0.09
+master_df['or local tax'] = 0.065
 # now i want to create a total taxes and fees variable for california
-master_df['nv total fees and taxes'] = (
-    master_df['nv excise tax'] 
-    + master_df['lvbob_cost']
-    + master_df['county_tax']
+master_df['or total fees and taxes'] = (
+    master_df['or excise tax'] 
+    + master_df['or local tax']
+    + master_df['cfp_cost']
 )
 
 # let's now calculate the mystery gas surcharge
 master_df['unexplained differential (nominal)'] = (
-    master_df['nevada gas (retail) (nominal)']
-    - master_df['nv total fees and taxes']
+    master_df['oregon gas (retail) (nominal)']
+    - master_df['or total fees and taxes']
 ) - (
-    master_df['national retail excl. nv (nominal)']
-    - master_df['average state tax excl. nv']
+    master_df['national retail excl. or (nominal)']
+    - master_df['average state tax excl. or']
 )
 
 # the explained differential will be the difference between california and national gas prices, w/ the unexplained differential subtracted:
 master_df['explained differential (nominal)'] = (
-    master_df['nevada gas (retail) (nominal)']
-    - master_df['national retail excl. nv (nominal)']
+    master_df['oregon gas (retail) (nominal)']
+    - master_df['national retail excl. or (nominal)']
 ) - master_df['unexplained differential (nominal)']
 
 # now let's run through a loop applying this to all our price variables
@@ -131,10 +134,10 @@ master_df['days in month'] = master_df.apply(lambda row: days_in_month(row['year
     # this formula is simply the total gas sold in california monthly x the unexplained differential
     # note: i'm using the REAL unexplained differential
 master_df['monthly cost of surcharge (millions)'] = (master_df['unexplained differential (real)']
-                                        *master_df['nv total gas sold'])/1000000
+                                        *master_df['or total gas sold'])/1000000
 # now let's find the average per day, using the 12-month moving average divided by 30.5
 # now divide that moving average by 30.5 and multiply by unexplained differential to find the daily average cost
-master_df['average daily cost of mgs (millions)'] = ((master_df['nv total gas sold']
+master_df['average daily cost of mgs (millions)'] = ((master_df['or total gas sold']
                                         /master_df['days in month'])*master_df['unexplained differential (real)'])/1000000
 
 # next i want to calculate a variable that severin refers to as CA Margin, 
@@ -151,6 +154,6 @@ master_df.to_csv(f'{clean_data}/master.csv', index=True)
 # now let's create a csv with ONLY the unexplained differential (real) column 
 master_df = master_df[['unexplained differential (real)']]
 master_df.rename(
-    columns = {'unexplained differential (real)': 'nv_mgs_real'}, inplace=True
+    columns = {'unexplained differential (real)': 'or_mgs_real'}, inplace=True
 )
-master_df.to_csv(f'{clean_data}/nv_mgs_real.csv', index=True)
+master_df.to_csv(f'{clean_data}/or_mgs_real.csv', index=True)

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 # let's create a set of locals referring to our directory and working directory 
 home_dir = Path.home()
-work_dir = (home_dir / 'mystery_ca_gas_surcharge-1' / 'nevada')
+work_dir = (home_dir / 'mystery_ca_gas_surcharge-1' / 'oregon')
 data = (work_dir / 'data')
 clean_data = (data / 'clean')
 raw_data = (data / 'raw')
@@ -77,30 +77,30 @@ gas_retail_df = gas_retail_df.reset_index(drop=True)  # if the index is redundan
 gas_retail_df['date'] = pd.to_datetime(gas_retail_df['date'])
 
 # now let's pull in the raw nevada data
-nv_retail = pd.read_csv(f'{raw_data}/nv_opis_retail.csv')
-nv_retail.rename(
+or_retail = pd.read_csv(f'{raw_data}/or_opis_retail.csv')
+or_retail.rename(
     columns = {
-        'nevada_avg_price': 'nevada gas (retail) (nominal)',
+        'oregon_avg_price': 'oregon gas (retail) (nominal)',
     }, inplace=True
 )
-nv_retail['date'] = pd.to_datetime(nv_retail['date'])
+or_retail['date'] = pd.to_datetime(or_retail['date'])
 
-gas_retail_df = pd.merge(gas_retail_df, nv_retail, on='date', how='outer')
+gas_retail_df = pd.merge(gas_retail_df, or_retail, on='date', how='outer')
 
 # forward fill 'nevada gas (retail) nominal'
-gas_retail_df['nevada gas (retail) (nominal)'] = (
-    gas_retail_df['nevada gas (retail) (nominal)'].ffill()
+gas_retail_df['oregon gas (retail) (nominal)'] = (
+    gas_retail_df['oregon gas (retail) (nominal)'].ffill()
 )
 
 filtered_df = gas_retail_df[(gas_retail_df['date'] >= '2015-01-01') & (gas_retail_df['date'] <= '2024-08-01')]
 plt.figure(figsize=(10, 6))
-plt.plot(filtered_df['date'], filtered_df['nevada gas (retail) (nominal)'], 
-         label='NV Retail Price',
+plt.plot(filtered_df['date'], filtered_df['oregon gas (retail) (nominal)'], 
+         label='OR Retail Price',
          color='blue')
 plt.plot(filtered_df['date'], filtered_df['national gas (retail) (nominal)'], 
          label='USA Retail Price',
          color='orange')
-plt.title('NV vs. Rest of Country Gas Retail Prices (in $2023), 2000-2024')
+plt.title('OR vs. Rest of Country Gas Retail Prices (in $2023), 2000-2024')
 plt.xlabel('Date')
 plt.ylabel('Retail Gasoline Price')
 plt.grid(True)
