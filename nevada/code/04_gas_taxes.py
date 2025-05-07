@@ -28,7 +28,7 @@ for year in range(2001, 2012):
     df.columns = ['State', 'GasolineRate', 'GasolineEffDate']
     df = df[~df['State'].isin(states_list)]
     df['State'] = df['State'].str.replace(' \*', '', regex=True)
-    print(df['State'].unique())
+    #print(df['State'].unique())
     df['State'] = df['State'].fillna(method='ffill')
     df['GasolineEffDate'] = pd.to_datetime(df['GasolineEffDate'])
     gas_tax_historical = pd.concat([gas_tax_historical, df], ignore_index=True)
